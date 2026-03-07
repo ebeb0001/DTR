@@ -207,3 +207,9 @@ marimo/_lsp/
 __marimo__/
 
 *.csv
+sumo_data/
+data/
+cleaned_data/
+dump/
+new_start/
+bin/
