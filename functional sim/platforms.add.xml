@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<additional>
+	<trainStop id="288->514" lane="288_514_0" name="Cour-sur-Heure to Ham-sur-Heure platform" startPos="80" endPos="300" />
+	<trainStop id="288->147" lane="288_147_0" name="Cour-sur-Heure to Berzée platform" startPos="80" endPos="300" />
+	<trainStop id="147->976" lane="147_976_0" name="Berzée to Pry platform" startPos="80" endPos="300" />
+	<trainStop id="147->288" lane="147_288_0" name="Berzée to Cour-sur-Heure platform" startPos="80" endPos="300" />
+	<trainStop id="514->288" lane="514_288_0" name="Ham-sur-Heure to Cour-sur-Heure platform" startPos="80" endPos="300" />
+	<trainStop id="976->147" lane="976_147_0" name="Pry to Berzée platform" startPos="80" endPos="300" />
+</additional>

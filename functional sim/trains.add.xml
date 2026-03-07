@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<additional>
+	<vType id="myTrain" vClass="rail" length="80" accel="1.0" decel="1.0" maxSpeed="33.33" guiShape="rail"/>
+</additional>

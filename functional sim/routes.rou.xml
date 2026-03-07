@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes>
+	<vType id="myTrain" length="80.00" maxSpeed="33.33" vClass="rail" guiShape="rail" accel="1.0" decel="1.0"/>
+	<vehicle id="train_0" type="myTrain" depart="4860.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="5040.0"/>
+		<stop trainStop="288->514" until="5280.0"/>
+	</vehicle>
+	<vehicle id="train_1" type="myTrain" depart="9060.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="9300.0"/>
+		<stop trainStop="147->976" until="9540.0"/>
+	</vehicle>
+	<vehicle id="train_2" type="myTrain" depart="12060.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="12240.0"/>
+		<stop trainStop="288->514" until="12480.0"/>
+	</vehicle>
+	<vehicle id="train_3" type="myTrain" depart="16260.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="16500.0"/>
+		<stop trainStop="147->976" until="16740.0"/>
+	</vehicle>
+	<vehicle id="train_4" type="myTrain" depart="19260.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="19440.0"/>
+		<stop trainStop="288->514" until="19680.0"/>
+	</vehicle>
+	<vehicle id="train_5" type="myTrain" depart="23460.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="23700.0"/>
+		<stop trainStop="147->976" until="23940.0"/>
+	</vehicle>
+	<vehicle id="train_6" type="myTrain" depart="26460.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="26640.0"/>
+		<stop trainStop="288->514" until="26880.0"/>
+	</vehicle>
+	<vehicle id="train_7" type="myTrain" depart="30660.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="30900.0"/>
+		<stop trainStop="147->976" until="31140.0"/>
+	</vehicle>
+	<vehicle id="train_8" type="myTrain" depart="33660.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="33840.0"/>
+		<stop trainStop="288->514" until="34080.0"/>
+	</vehicle>
+	<vehicle id="train_9" type="myTrain" depart="37860.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="38100.0"/>
+		<stop trainStop="147->976" until="38340.0"/>
+	</vehicle>
+	<vehicle id="train_10" type="myTrain" depart="40860.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="41040.0"/>
+		<stop trainStop="288->514" until="41280.0"/>
+	</vehicle>
+	<vehicle id="train_11" type="myTrain" depart="45060.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="45300.0"/>
+		<stop trainStop="147->976" until="45540.0"/>
+	</vehicle>
+	<vehicle id="train_12" type="myTrain" depart="48060.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="48240.0"/>
+		<stop trainStop="288->514" until="48480.0"/>
+	</vehicle>
+	<vehicle id="train_13" type="myTrain" depart="52260.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="52500.0"/>
+		<stop trainStop="147->976" until="52740.0"/>
+	</vehicle>
+	<vehicle id="train_14" type="myTrain" depart="55260.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="55440.0"/>
+		<stop trainStop="288->514" until="55680.0"/>
+	</vehicle>
+	<vehicle id="train_15" type="myTrain" depart="59460.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="59700.0"/>
+		<stop trainStop="147->976" until="59940.0"/>
+	</vehicle>
+	<vehicle id="train_16" type="myTrain" depart="83100.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="83340.0"/>
+		<stop trainStop="288->514" until="83580.0"/>
+	</vehicle>
+	<vehicle id="train_17" type="myTrain" depart="86400.0">
+		<route edges="514_288 288_147" />
+		<stop trainStop="288->147" until="86640.0"/>
+	</vehicle>
+	<vehicle id="train_18" type="myTrain" depart="86880.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="87120.0"/>
+		<stop trainStop="288->514" until="87240.0"/>
+	</vehicle>
+	<vehicle id="train_19" type="myTrain" depart="88140.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="88320.0"/>
+		<stop trainStop="288->514" until="88560.0"/>
+	</vehicle>
+	<vehicle id="train_20" type="myTrain" depart="89280.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="89460.0"/>
+		<stop trainStop="288->514" until="89580.0"/>
+	</vehicle>
+	<vehicle id="train_21" type="myTrain" depart="90660.0">
+		<route edges="514_288 288_147" />
+		<stop trainStop="288->147" until="90900.0"/>
+	</vehicle>
+	<vehicle id="train_22" type="myTrain" depart="91020.0">
+		<route edges="147_288 288_514" />
+		<stop trainStop="288->514" until="91260.0"/>
+	</vehicle>
+	<vehicle id="train_23" type="myTrain" depart="93660.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="93900.0"/>
+		<stop trainStop="288->514" until="94020.0"/>
+	</vehicle>
+	<vehicle id="train_24" type="myTrain" depart="95760.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="95880.0"/>
+		<stop trainStop="147->976" until="96120.0"/>
+	</vehicle>
+	<vehicle id="train_25" type="myTrain" depart="96360.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="96600.0"/>
+		<stop trainStop="288->514" until="96720.0"/>
+	</vehicle>
+	<vehicle id="train_26" type="myTrain" depart="99360.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="99480.0"/>
+		<stop trainStop="147->976" until="99720.0"/>
+	</vehicle>
+	<vehicle id="train_27" type="myTrain" depart="99840.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="100080.0"/>
+		<stop trainStop="288->514" until="100200.0"/>
+	</vehicle>
+	<vehicle id="train_28" type="myTrain" depart="102960.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="103080.0"/>
+		<stop trainStop="147->976" until="103320.0"/>
+	</vehicle>
+	<vehicle id="train_29" type="myTrain" depart="103440.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="103680.0"/>
+		<stop trainStop="288->514" until="103800.0"/>
+	</vehicle>
+	<vehicle id="train_30" type="myTrain" depart="106560.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="106680.0"/>
+		<stop trainStop="147->976" until="106920.0"/>
+	</vehicle>
+	<vehicle id="train_31" type="myTrain" depart="107040.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="107280.0"/>
+		<stop trainStop="288->514" until="107400.0"/>
+	</vehicle>
+	<vehicle id="train_32" type="myTrain" depart="110160.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="110280.0"/>
+		<stop trainStop="147->976" until="110520.0"/>
+	</vehicle>
+	<vehicle id="train_33" type="myTrain" depart="110640.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="110880.0"/>
+		<stop trainStop="288->514" until="111000.0"/>
+	</vehicle>
+	<vehicle id="train_34" type="myTrain" depart="113760.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="113880.0"/>
+		<stop trainStop="147->976" until="114120.0"/>
+	</vehicle>
+	<vehicle id="train_35" type="myTrain" depart="114240.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="114480.0"/>
+		<stop trainStop="288->514" until="114600.0"/>
+	</vehicle>
+	<vehicle id="train_36" type="myTrain" depart="117360.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="117480.0"/>
+		<stop trainStop="147->976" until="117720.0"/>
+	</vehicle>
+	<vehicle id="train_37" type="myTrain" depart="117840.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="118080.0"/>
+		<stop trainStop="288->514" until="118200.0"/>
+	</vehicle>
+	<vehicle id="train_38" type="myTrain" depart="120900.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="121020.0"/>
+		<stop trainStop="147->976" until="121260.0"/>
+	</vehicle>
+	<vehicle id="train_39" type="myTrain" depart="121440.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="121680.0"/>
+		<stop trainStop="288->514" until="121800.0"/>
+	</vehicle>
+	<vehicle id="train_40" type="myTrain" depart="124560.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="124680.0"/>
+		<stop trainStop="147->976" until="124920.0"/>
+	</vehicle>
+	<vehicle id="train_41" type="myTrain" depart="124920.0">
+		<route edges="976_147 147_288 288_514" />
+		<stop trainStop="147->288" until="125160.0"/>
+		<stop trainStop="288->514" until="125340.0"/>
+	</vehicle>
+	<vehicle id="train_42" type="myTrain" depart="126660.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="126900.0"/>
+		<stop trainStop="147->976" until="127080.0"/>
+	</vehicle>
+	<vehicle id="train_43" type="myTrain" depart="127920.0">
+		<route edges="976_147 147_288" />
+		<stop trainStop="147->288" until="128160.0"/>
+	</vehicle>
+	<vehicle id="train_44" type="myTrain" depart="192930.0">
+		<route edges="147_976" />
+	</vehicle>
+	<vehicle id="train_45" type="myTrain" depart="214560.0">
+		<route edges="147_288 288_514" />
+		<stop trainStop="288->514" until="214800.0"/>
+	</vehicle>
+	<vehicle id="train_46" type="myTrain" depart="216120.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="216360.0"/>
+		<stop trainStop="147->976" until="216540.0"/>
+	</vehicle>
+	<vehicle id="train_47" type="myTrain" depart="218100.0">
+		<route edges="514_288 288_147 147_976" />
+		<stop trainStop="288->147" until="218220.0"/>
+		<stop trainStop="147->976" until="218460.0"/>
+	</vehicle>
+	<vehicle id="train_48" type="myTrain" depart="219360.0">
+		<route edges="514_288 288_147" />
+		<stop trainStop="288->147" until="219600.0"/>
+	</vehicle>
+	<vehicle id="train_49" type="myTrain" depart="219600.0">
+		<route edges="147_288 288_514" />
+		<stop trainStop="288->514" until="219720.0"/>
+	</vehicle>
+</routes>
