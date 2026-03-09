@@ -124,7 +124,6 @@ class RailwaySimulationGenerator :
 			self.stations_dict[station_id]["name"] = row["Name_FR_full"]
 			self.stations_dict[station_id]["x"] = row["Geo_y"]
 			self.stations_dict[station_id]["y"] = row["Geo_x"]
-	
 
 	def loadEdges(self) :
 		print("Loading station to station data...")
@@ -365,7 +364,7 @@ class RailwaySimulationGenerator :
 		print("Writing trains file...")
 		train_str : str = ('<?xml version="1.0" encoding="UTF-8"?>\n' +
 			'<additional>\n' + 
-			f'\t<vType id="myTrain" vClass="rail" length="80" accel="1.0" decel="1.0" maxSpeed="{self.train_speed}" guiShape="rail"/>\n' +
+			f'\t<vType id="myTrain" vClass="rail" length="80" accel="1.2" decel="1.3" maxSpeed="{self.train_speed}" guiShape="rail"/>\n' +
 			'</additional>'
 		)
 		self.writeFile(self.filenames["trains"], train_str)
@@ -391,7 +390,7 @@ class RailwaySimulationGenerator :
 		routes_str = (
 			'<?xml version="1.0" encoding="UTF-8"?>\n' + 
 			'<routes>\n' +
-			f'\t<vType id="myTrain" length="80.00" maxSpeed="{self.train_speed}" vClass="rail" guiShape="rail" accel="1.0" decel="1.0"/>\n' 
+			f'\t<vType id="myTrain" length="80.00" maxSpeed="{self.train_speed}" vClass="rail" guiShape="rail" accel="1.2" decel="1.3"/>\n' 
 		)
 		trip_cmp = 0
 
@@ -405,7 +404,7 @@ class RailwaySimulationGenerator :
 
 			for info in trip[1:] :
 				routes_str += (
-					f'\t\t<stop trainStop="{info["departure_station"]}->{info["arrival_station"]}" until="{float(info["sumo_time"])}"/>\n'
+					f'\t\t<stop trainStop="{info["departure_station"]}->{info["arrival_station"]}" until="{float(info["sumo_time"])}" duration="60"/>\n'
 				)
 			routes_str += '\t</vehicle>\n'
 		routes_str += '</routes>'
