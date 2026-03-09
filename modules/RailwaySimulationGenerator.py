@@ -5,6 +5,7 @@ import pyspark.sql.functions as F
 import datetime as dt
 import subprocess
 from copy import deepcopy
+import argparse
 
 mapping_stations : dict[int : list[int]] = {
 	1155 : [404, 736, 1149, 1189],
@@ -112,6 +113,7 @@ class RailwaySimulationGenerator :
 		}
 
 	def loadStations(self) :
+		print("Loading stations data...")
 		self.stations_df = self.spark.read.csv(self.stations_file, header=True, inferSchema=True, sep=";")
 		for row in self.stations_df.collect() :
 			station_id : int = row["ID"]
@@ -122,8 +124,10 @@ class RailwaySimulationGenerator :
 			self.stations_dict[station_id]["name"] = row["Name_FR_full"]
 			self.stations_dict[station_id]["x"] = row["Geo_y"]
 			self.stations_dict[station_id]["y"] = row["Geo_x"]
+	
 
 	def loadEdges(self) :
+		print("Loading station to station data...")
 		self.station_to_station_df : sql.DataFrame = self.spark.read.csv(self.station_to_station_file, header=True, 
 			inferSchema=True, sep=";")
 		schema : T.DataType = T.ArrayType(T.ArrayType(T.DoubleType()))
@@ -156,6 +160,7 @@ class RailwaySimulationGenerator :
 			self.edges_dict[departure_station][arrival_station]["shape"] = shape
 
 	def loadPunctualityData(self) :
+		print("Loading punctuality data...")
 		self.punctuality_data_df : sql.DataFrame = self.spark.read.csv(self.punctuality_data_file, header=True, 
 			inferSchema=True, sep=";")
 		window : sql.Window = (
@@ -171,11 +176,14 @@ class RailwaySimulationGenerator :
 		)
 
 	def loadData(self) :
+		print("Loading data...")
 		self.loadStations()
 		self.loadEdges()
 		self.loadPunctualityData()
+		print("Data loaded successfully")
 
 	def filterStations(self) :
+		print("Filtering stations...")
 		for station in self.sim_stations :
 			for s in self.edges_dict[station] :
 				if s not in self.sim_stations and s not in self.additional_stations :
@@ -184,12 +192,14 @@ class RailwaySimulationGenerator :
 			F.col("ID").isin(self.additional_stations))
 
 	def filterEdges(self) :
+		print("Filtering edges...")
 		self.station_to_station_df = self.station_to_station_df.filter(
 			(F.col("Departure_station_id").isin(self.sim_stations)) &
 			(F.col("Arrival_station_id").isin(self.sim_stations))
 		)
 
 	def filtrerPunctualityData(self) :
+		print("Filtering punctuality data...")
 		self.punctuality_data_df = (self.punctuality_data_df.filter(
 			(F.col("PLANNED_DATETIME_DEP") >= F.lit(self.start_datetime.strftime("%Y-%m-%d %H:%M:%S"))) & 
 			(F.col("PLANNED_DATETIME_DEP") <= F.lit(self.end_datetime.strftime("%Y-%m-%d %H:%M:%S"))))
@@ -200,16 +210,19 @@ class RailwaySimulationGenerator :
 		)
 
 	def filterData(self) :
+		print("Filtering data...")
 		self.filterStations()
 		self.filterEdges()
 		self.filtrerPunctualityData()
+		print("Data filtered successfully")
 
 	def generateTrips(self) :
+		print("Generating trips...")
 		trip_number : int = None	
 		trip : list[dict[str : int]] = []
 		for row in self.punctuality_data_df.collect() :
 			if trip_number is None :
-				print(f"Processing trip number {row['TRAIN_NO']}")
+				# print(f"Processing trip number {row['TRAIN_NO']}")
 				trip_number = row["TRAIN_NO"]
 
 			delta : float = (row["PLANNED_DATETIME_DEP"] - self.start_datetime).total_seconds()
@@ -221,7 +234,7 @@ class RailwaySimulationGenerator :
 
 			in_mapping_s1, in_mapping_s2 = (info["departure_station"] in mapping_stations, 
 			info["arrival_station"] in mapping_stations)
-			print(f"Processing info {info} with mapping {in_mapping_s1} and {in_mapping_s2}")
+			# print(f"Processing info {info} with mapping {in_mapping_s1} and {in_mapping_s2}")
 
 			if in_mapping_s1 and in_mapping_s2 :
 				# print(f"Both stations are in the mapping, trying to find a match")
@@ -248,11 +261,11 @@ class RailwaySimulationGenerator :
 						break
 
 			if trip_number == row["TRAIN_NO"] :
-				print(f"Adding info {info}")
+				# print(f"Adding info {info}")
 				trip.append(info)
 			else :
 				if len(trip) >= len(self.sim_stations) :
-					print(f"Finished processing trip {trip}")
+					# print(f"Finished processing trip {trip}")
 					trip.sort(key=lambda x: x["sumo_time"])
 					self.trips.append(trip)
 					trip = [info]
@@ -290,6 +303,7 @@ class RailwaySimulationGenerator :
 			f.write(content)
 
 	def writeStationsFile(self) :
+		print("Writing stations file...")
 		stations_str : str = '<?xml version="1.0" encoding="UTF-8"?>\n' + '<nodes>\n'
 		for station_id in self.sim_stations + self.additional_stations :
 			station : dict[str : str | float] = self.stations_dict[station_id]
@@ -298,6 +312,7 @@ class RailwaySimulationGenerator :
 		self.writeFile(self.filenames["stations"], stations_str)
 
 	def writeEdgesFile(self) :
+		print("Writing edges file...")
 		edges_str = '<?xml version="1.0" encoding="UTF-8"?>\n' + '<edges>\n'
 		for depart in self.sim_stations + self.additional_stations :
 			for arrival in self.edges_dict[depart] :
@@ -311,6 +326,7 @@ class RailwaySimulationGenerator :
 		self.writeFile(self.filenames["edges"], edges_str)
 
 	def writePlatformsFile(self) :
+		print("Writing platforms file...")
 		platforms_str = (
 			'<?xml version="1.0" encoding="UTF-8"?>\n' + 
 			'<additional>\n'
@@ -323,11 +339,14 @@ class RailwaySimulationGenerator :
 		self.writeFile(self.filenames["platforms"], platforms_str)
 
 	def writeNetworkFiles(self) :
+		print("Writing network files...")
 		self.writeStationsFile()
 		self.writeEdgesFile()
 		self.writePlatformsFile()
+		print("Network files written successfully")
 
 	def generateNetwork(self, launch : bool = True) :
+		print("Generating network file...")
 		network_command = [
 			"netconvert",					
 			"--node-files", f'{self.filenames["stations"]}',	
@@ -338,10 +357,12 @@ class RailwaySimulationGenerator :
 		]
 		if launch :
 			subprocess.run(network_command, check=True)
+			print("Network file generated successfully")
 		else :
 			print(" ".join(network_command))
 
 	def writeTrainsFile(self) :
+		print("Writing trains file...")
 		train_str : str = ('<?xml version="1.0" encoding="UTF-8"?>\n' +
 			'<additional>\n' + 
 			f'\t<vType id="myTrain" vClass="rail" length="80" accel="1.0" decel="1.0" maxSpeed="{self.train_speed}" guiShape="rail"/>\n' +
@@ -350,6 +371,7 @@ class RailwaySimulationGenerator :
 		self.writeFile(self.filenames["trains"], train_str)
 
 	def writeTripsFile(self) :
+		print("Writing trips file...")
 		trips_str = (
 			'<?xml version="1.0" encoding="UTF-8"?>\n' + 
 			'<routes>\n'
@@ -365,6 +387,7 @@ class RailwaySimulationGenerator :
 		self.writeFile(self.filenames["schedule"], trips_str)
 
 	def writeRoutesFile(self) :
+		print("Writing routes file...")
 		routes_str = (
 			'<?xml version="1.0" encoding="UTF-8"?>\n' + 
 			'<routes>\n' +
@@ -389,11 +412,14 @@ class RailwaySimulationGenerator :
 		self.writeFile(self.filenames["routes"], routes_str)
 
 	def writeScheduleFiles(self) :
+		print("Writing schedule files...")
 		self.writeTrainsFile()
 		self.writeTripsFile()
 		self.writeRoutesFile()
+		print("Schedule files written successfully")
 
 	def writeConfigurationFile(self) :
+		print("Writing configuration file...")
 		sumo_config_str : str = (f'<?xml version="1.0" encoding="UTF-8"?>\n' +
 		'<configuration>\n' +
 			'\t<input>\n' +
@@ -416,10 +442,61 @@ class RailwaySimulationGenerator :
 		'</configuration>'
 		)
 		self.writeFile(self.filenames["config"], sumo_config_str)
+		print("Configuration file written successfully")
 
-	def startSimulation(self, launch : bool = True, gui : bool = False) :
-		sumo_command = ["sumo-gui" if gui else "sumo", "-c", self.filenames["config"]]
-		if launch :
-			subprocess.run(sumo_command, check=True)
-		else :
-			print(" ".join(sumo_command))
+	def startSimulation(self) :
+		sumo_command = ["sumo-gui", "-c", self.filenames["config"]]
+		print("with gui : ", " ".join(sumo_command))
+		sumo_command[0] = "sumo"
+		print("without gui : ", " ".join(sumo_command))
+
+	def generateSimulation(self) :
+		self.loadData()
+		self.filterData()
+		self.writeNetworkFiles()
+		self.generateNetwork()
+		self.generateTrips()
+		self.writeScheduleFiles()
+		self.writeConfigurationFile()
+		self.startSimulation()
+
+if __name__ == "__main__" :
+	parser = argparse.ArgumentParser(description="Generate a railway simulation for SUMO based on punctuality data")
+	parser.add_argument("--stations_file", type=str, required=True, 
+	help="Path to the stations file")
+	parser.add_argument("--station_to_station_file", type=str, required=True, 
+	help="Path to the station to station file")
+	parser.add_argument("--punctuality_data_file", type=str, required=True, 
+	help="Path to the punctuality data file")
+	parser.add_argument("--output_dir", type=str, required=True, 
+	help="Directory where the output files will be saved")
+	parser.add_argument("--train_speed", type=float, default=33.33, 
+	help="Maximum speed of the trains in km/h")
+	parser.add_argument("--nb_days", type=int, default=5, 
+	help="Number of days to simulate")
+	parser.add_argument("--edge_max_speed", type=float, default=27.78, 
+	help="Maximum speed on the edges in km/h")
+	parser.add_argument("--start_datetime", type=str, default="2025-01-01 06:00:00", 
+	help="Start datetime of the simulation in the format YYYY-MM-DD HH:MM:SS")
+	parser.add_argument("--sim_stations", type=int, nargs="+", required=True, 
+	help="List of station IDs to include in the simulation")
+	args = parser.parse_args()
+
+	spark = (sql.SparkSession.builder
+		.appName("RailwaySimulationGenerator")
+		.config("spark.driver.extraJavaOptions", "-Djava.security.manager=allow")
+		.getOrCreate()
+	)
+	generator = RailwaySimulationGenerator(
+		stations_file=args.stations_file,
+		station_to_station_file=args.station_to_station_file,
+		punctuality_data_file=args.punctuality_data_file,
+		output_dir=args.output_dir,
+		train_speed=args.train_speed,
+		nb_days=args.nb_days,
+		edge_max_speed=args.edge_max_speed,
+		start_datetime=args.start_datetime,
+		sim_stations=args.sim_stations,
+		spark=spark
+	)
+	generator.generateSimulation()
