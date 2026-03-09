@@ -82,6 +82,10 @@ if __name__ == "__main__" :
 	args_parser.add_argument("-sep", type=str, default=";", help="CSV separator (default: ';')")
 	args_parser.add_argument("-d", type=int, default=6, help="Number of decimals for rounding coordinates and distance (default: 6)")
 	args : argparse.Namespace = args_parser.parse_args()
-	spark : sql.SparkSession = sql.SparkSession.builder.appName("TracksETL").getOrCreate()
+	spark : sql.SparkSession = (sql.SparkSession.builder
+		.appName("TracksETL")
+		.config("spark.driver.extraJavaOptions", "-Djava.security.manager=allow")
+		.getOrCreate()
+	)
 	etl : TracksETL = TracksETL(spark, args.i, args.sep, args.o, args.d)
 	etl.run()

@@ -1,4 +1,5 @@
-python modules/ETL/StationsETL.py -i data/operational_points.csv -o cleaned_data/operational_points
-python modules/ETL/TracksETL.py -i data/station_to_station.csv -o bin/st_to_st
-python modules/ETL/PunctualityETL.py -i data/punctuality/202501.csv -o bin/punctuality
-python modules/CoordinatesCorrector.py -in_st cleaned_data/operational_points.csv -out_st sumo_data/stations.csv -in_st_to_st cleaned_data/station_to_station.csv -out_st_to_st sumo_data/station_to_station.csv
+py modules/ETL/StationsETL.py -i data/operational_points.csv -o cleaned_data/operational_points
+py modules/ETL/TracksETL.py -i data/station_to_station.csv -o bin/st_to_st
+py modules/ETL/PunctualityETL.py -i data/punctuality/202501.csv -o bin/punctuality
+py modules/CoordinatesCorrector.py -in_st cleaned_data/operational_points.csv -out_st sumo_data/stations.csv -in_st_to_st cleaned_data/station_to_station.csv -out_st_to_st sumo_data/station_to_station.csv
+py modules/RailwaySimulationGenerator.py --stations_file sumo_data/stations.csv --station_to_station_file sumo_data/station_to_station.csv --punctuality_data_file sumo_data/punctuality/202501.csv --output_dir new_start --sim_stations 288 147

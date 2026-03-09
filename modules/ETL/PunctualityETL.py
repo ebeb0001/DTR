@@ -113,6 +113,10 @@ if __name__ == "__main__" :
 	args_parser.add_argument("-o", type=str, required=True, help="Output file path")
 	args_parser.add_argument("-sep", type=str, default=",", help="CSV separator (default: ',')")
 	args : argparse.Namespace = args_parser.parse_args()
-	spark : sql.SparkSession= sql.SparkSession.builder.appName("PunctualityETL").getOrCreate()
+	spark : sql.SparkSession= (sql.SparkSession.builder
+		.appName("PunctualityETL")
+		.config("spark.driver.extraJavaOptions", "-Djava.security.manager=allow")
+		.getOrCreate()
+	)
 	etl : PunctualityETL = PunctualityETL(spark, args.i, args.sep, args.o)
 	etl.run()

@@ -73,6 +73,10 @@ if __name__ == "__main__" :
 	args_parser.add_argument("-o", type=str, help="Path to the output CSV file")
 	args_parser.add_argument("-d", type=int, default=6, help="Number of decimals to keep for Geo Point coordinates")
 	args : argparse.Namespace = args_parser.parse_args()
-	spark : sql.SparkSession = sql.SparkSession.builder.appName("StationsETL").getOrCreate()
+	spark : sql.SparkSession = (sql.SparkSession.builder
+		.appName("StationsETL")
+		.config("spark.driver.extraJavaOptions", "-Djava.security.manager=allow")
+		.getOrCreate()
+	)
 	etl : StationsETL = StationsETL(spark, args.i, args.sep, args.o, int(args.d))
 	etl.run()
