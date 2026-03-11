@@ -193,7 +193,7 @@ class RailwaySimulationGenerator :
 	def filterEdges(self) :
 		print("Filtering edges...")
 		self.station_to_station_df = self.station_to_station_df.filter(
-			(F.col("Departure_station_id").isin(self.sim_stations)) &
+			(F.col("Departure_station_id").isin(self.sim_stations)) |
 			(F.col("Arrival_station_id").isin(self.sim_stations))
 		)
 
@@ -263,7 +263,7 @@ class RailwaySimulationGenerator :
 				# print(f"Adding info {info}")
 				trip.append(info)
 			else :
-				# if len(trip) >= len(self.sim_stations) - 1 :
+				if len(trip) > 1 :
 					# print(f"Finished processing trip {trip}")
 					trip.sort(key=lambda x: x["sumo_time"])
 					self.trips.append(trip)
@@ -271,7 +271,7 @@ class RailwaySimulationGenerator :
 					trip_id = (row["TRAIN_NO"], row["REAL_DATE_DEP"])
 
 		# if trip is not None and len(trip) >= len(self.sim_stations) - 1 :
-		if trip is not None :
+		if trip is not None and len(trip) > 1 :
 			trip.sort(key=lambda x: x["sumo_time"])
 			self.trips.append(trip)
 		self.trips.sort(key=lambda x: x[0]["sumo_time"])
@@ -281,7 +281,9 @@ class RailwaySimulationGenerator :
 			trip : list[dict] = self.trips[i]
 			j : int = 0
 			while j < len(trip) :
-				if trip[j]["departure_station"] is None or trip[j]["arrival_station"] is None :
+				if (trip[j]["departure_station"] is None or trip[j]["arrival_station"] is None or
+				trip[j]["departure_station"] not in self.sim_stations + self.additional_stations or 
+				trip[j]["arrival_station"] not in self.sim_stations + self.additional_stations) :
 					trip.pop(j)
 				else :
 					j += 1
