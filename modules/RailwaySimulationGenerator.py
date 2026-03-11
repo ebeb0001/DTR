@@ -205,7 +205,7 @@ class RailwaySimulationGenerator :
 			.filter(
 				F.col("STOPPING_PLACE_ID").isin(self.sim_stations) |
 				F.col("NEXT_STOPPING_PLACE_ID").isin(self.sim_stations)
-			).orderBy("PLANNED_DATETIME_DEP", "TRAIN_NO", "REAL_DATE_DEP")
+			).orderBy("TRAIN_NO", "REAL_DATE_DEP")
 		)
 
 	def filterData(self) :
@@ -217,12 +217,12 @@ class RailwaySimulationGenerator :
 
 	def generateTrips(self) :
 		print("Generating trips...")
-		trip_number : int = None	
+		trip_id : tuple[int, dt.datetime] = None	
 		trip : list[dict[str : int]] = []
 		for row in self.punctuality_data_df.collect() :
-			if trip_number is None :
+			if trip_id is None :
 				# print(f"Processing trip number {row['TRAIN_NO']}")
-				trip_number = row["TRAIN_NO"]
+				trip_id = (row["TRAIN_NO"], row["REAL_DATE_DEP"])
 
 			delta : float = (row["PLANNED_DATETIME_DEP"] - self.start_datetime).total_seconds()
 			info  : dict[str : int] = {
@@ -259,18 +259,19 @@ class RailwaySimulationGenerator :
 						info["arrival_station"] = s2
 						break
 
-			if trip_number == row["TRAIN_NO"] :
+			if trip_id == (row["TRAIN_NO"], row["REAL_DATE_DEP"]) :
 				# print(f"Adding info {info}")
 				trip.append(info)
 			else :
-				if len(trip) >= len(self.sim_stations) :
+				# if len(trip) >= len(self.sim_stations) - 1 :
 					# print(f"Finished processing trip {trip}")
 					trip.sort(key=lambda x: x["sumo_time"])
 					self.trips.append(trip)
 					trip = [info]
-					trip_number = row["TRAIN_NO"]
+					trip_id = (row["TRAIN_NO"], row["REAL_DATE_DEP"])
 
-		if trip is not None and len(trip) >= len(self.sim_stations) :
+		# if trip is not None and len(trip) >= len(self.sim_stations) - 1 :
+		if trip is not None :
 			trip.sort(key=lambda x: x["sumo_time"])
 			self.trips.append(trip)
 		self.trips.sort(key=lambda x: x[0]["sumo_time"])
@@ -291,11 +292,12 @@ class RailwaySimulationGenerator :
 				if (t1["departure_station"] == t2["departure_station"] or 
 				t1["arrival_station"] == t2["arrival_station"] or 
 				t1["arrival_station"] != t2["departure_station"]) :
-					trip[t]["sumo_time"] = (t1["sumo_time"] + t2["sumo_time"]) / 2
+					# trip[t]["sumo_time"] = (t1["sumo_time"] + t2["sumo_time"]) / 2
 					trip.pop(t + 1)
 				else : 
 					t += 1
 		self.trips.sort(key=lambda x: x[0]["sumo_time"])
+		print("Number of trips generated : ", len(self.trips))
 
 	def writeFile(self, filename : str, content : str) :
 		with open(filename, 'w', encoding = "utf-8") as f :
@@ -375,13 +377,13 @@ class RailwaySimulationGenerator :
 			'<?xml version="1.0" encoding="UTF-8"?>\n' + 
 			'<routes>\n'
 		)
-		trip_number = 0
+		trip_id = 0
 		for trip in self.trips :
 			depart_edge = f'{trip[0]["departure_station"]}_{trip[0]["arrival_station"]}'
 			depart_time = trip[0]["sumo_time"]
 			arrival_edge = f'{trip[-1]["departure_station"]}_{trip[-1]["arrival_station"]}'
-			trips_str +=f'\t<trip id="trip_{trip_number}" depart="{depart_time}" from="{depart_edge}" to="{arrival_edge}" type="myTrain" />\n'
-			trip_number += 1
+			trips_str +=f'\t<trip id="trip_{trip_id}" depart="{depart_time}" from="{depart_edge}" to="{arrival_edge}" type="myTrain" />\n'
+			trip_id += 1
 		trips_str += '</routes>'
 		self.writeFile(self.filenames["schedule"], trips_str)
 
@@ -404,7 +406,7 @@ class RailwaySimulationGenerator :
 
 			for info in trip[1:] :
 				routes_str += (
-					f'\t\t<stop trainStop="{info["departure_station"]}->{info["arrival_station"]}" until="{float(info["sumo_time"])}" duration="60"/>\n'
+					f'\t\t<stop trainStop="{info["departure_station"]}->{info["arrival_station"]}" until="{float(info["sumo_time"])}" duration="30"/>\n'
 				)
 			routes_str += '\t</vehicle>\n'
 		routes_str += '</routes>'
@@ -473,7 +475,7 @@ if __name__ == "__main__" :
 	help="Maximum speed of the trains in km/h")
 	parser.add_argument("--nb_days", type=int, default=5, 
 	help="Number of days to simulate")
-	parser.add_argument("--edge_max_speed", type=float, default=27.78, 
+	parser.add_argument("--edge_max_speed", type=float, default=33.33, 
 	help="Maximum speed on the edges in km/h")
 	parser.add_argument("--start_datetime", type=str, default="2025-01-01 06:00:00", 
 	help="Start datetime of the simulation in the format YYYY-MM-DD HH:MM:SS")
