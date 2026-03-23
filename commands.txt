@@ -1,4 +1,4 @@
-py modules/ETL/StationsETL.py -i data/operational_points.csv -o cleaned_data/operational_points
+py modules/ETL/StationsETL.py -i data/operational_points.csv -o cleaned_data/operational_points.csv
 py modules/ETL/TracksETL.py -i data/station_to_station.csv -o bin/st_to_st
 py modules/ETL/PunctualityETL.py -i data/punctuality/202501.csv -o bin/punctuality
 py modules/CoordinatesCorrector.py -in_st cleaned_data/operational_points.csv -out_st sumo_data/stations.csv -in_st_to_st cleaned_data/station_to_station.csv -out_st_to_st sumo_data/station_to_station.csv

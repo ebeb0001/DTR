@@ -120,3 +120,4 @@ if __name__ == "__main__" :
 	)
 	etl : PunctualityETL = PunctualityETL(spark, args.i, args.sep, args.o)
 	etl.run()
+	spark.stop()

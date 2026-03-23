@@ -46,7 +46,7 @@ class ETL :
 	def load(self) -> None :
 		"""Load the transformed dataframe to the output file."""
 		print("Loading data to output file...")
-		self.dataframe.coalesce(1).write.csv(self.output_filename, header=True, mode="overwrite", sep=";")
+		self.dataframe.toPandas().to_csv(self.output_filename, index=False, sep=";")
 		print("Data loading completed successfully.")
 
 	def run(self) -> None :

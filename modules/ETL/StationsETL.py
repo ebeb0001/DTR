@@ -80,3 +80,4 @@ if __name__ == "__main__" :
 	)
 	etl : StationsETL = StationsETL(spark, args.i, args.sep, args.o, int(args.d))
 	etl.run()
+	spark.stop()
