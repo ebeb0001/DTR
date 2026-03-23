@@ -28,6 +28,7 @@ class LineSegmentsETL(ETL) :
 					lambda coord : F.array(
 						F.round(coord.getItem(1).cast("double"), self.nb_decimals),
 						F.round(coord.getItem(0).cast("double"), self.nb_decimals),
+						F.round(coord.getItem(2).cast("double"), self.nb_decimals),
 					)
 				)
 			)
@@ -64,7 +65,7 @@ if __name__ == "__main__" :
 	parser.add_argument("-i", type=str, required=True, help="Path to the input CSV file")
 	parser.add_argument("-o", type=str, required=True, help="Path to the output CSV file")
 	parser.add_argument("-sep", type=str, default=";", help="CSV separator (default: ',')")
-	parser.add_argument("-d", type=int, default=5, help="Number of decimals for coordinates (default: 5)")
+	parser.add_argument("-d", type=int, default=6, help="Number of decimals for coordinates (default: 5)")
 	args = parser.parse_args()
 	spark : sql.SparkSession = (sql.SparkSession.builder
 		.appName("LineSegmentsETL")
