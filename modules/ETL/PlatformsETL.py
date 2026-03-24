@@ -7,7 +7,7 @@ import argparse
 class PlatformsETL(ETL) :
 	def __init__(self, spark : sql.SparkSession, filename : str, separator : str , 
 	output_filename : str, nb_decimals : int):
-		super().__init__(spark, filename, separator, output_filename, infer_schema = True)
+		super().__init__(spark, filename, separator, output_filename, infer_schema = False)
 		self.nb_decimals : int = nb_decimals
 
 	def convert(self):
@@ -20,7 +20,7 @@ class PlatformsETL(ETL) :
 		)
 
 		### Converting the columns to the right datatypes ###
-		self.dataframe = self.dataframe.withColumn("ID quai", F.col("ID quai").cast("int"))
+		self.dataframe = self.dataframe.withColumn("ID quai", F.col("ID quai").cast("integer"))
 		self.dataframe = self.dataframe.withColumn(
 			"Nom du point d'arrêt", 
 			F.col("Nom du point d'arrêt").cast("string")
