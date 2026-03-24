@@ -62,41 +62,6 @@ class LineSegmentSeparator :
 	def contract_2_degree_nodes(self) -> dict[str, list[dict[str :  list[tuple[float, float, float]]
 	| tuple[float, float, float]]]] :
 		print("Contracting degree-2 nodes...")
-		# degrees : dict[tuple[float, float, float] : int] = {node: len(neighbors) 
-		# for node, neighbors in self.graph.items()}
-		# topological_nodes : set[tuple[float, float, float]] = {node for node, degree 
-		# in degrees.items() if degree != 2}
-		# contracted_edges : list[tuple[float, float, float]] = []
-		# visited_half_edges = set()
-		# for start in topological_nodes : 
-		# 	for neighbor in self.graph[start] :
-		# 		half_edge_key = self.edgeKey(start, neighbor)
-		# 		if half_edge_key in visited_half_edges :
-		# 			continue
-		# 		path : list[tuple[float, float, float]] = [start]
-		# 		previous : tuple[float, float, float] = start
-		# 		current : tuple[float, float, float] = neighbor
-		# 		visited_half_edges.add(half_edge_key)
-		# 		while True :
-		# 			path.append(current)
-		# 			if current in topological_nodes :
-		# 				break
-		# 			neighbors = list(self.graph[current])
-		# 			if len(neighbors) != 2 :
-		# 				break
-		# 			next_node = neighbors[0] if neighbors[1] == previous else neighbors[1]
-		# 			half_edge_key = self.edgeKey(current, neighbor)
-		# 			if half_edge_key in visited_half_edges :
-		# 				break
-		# 			visited_half_edges.add(half_edge_key)
-		# 			previous, current = current, next_node
-		# 		contracted_edges.append({
-		# 			"start": path[0],
-		# 			"end": path[-1],
-		# 			"path": path
-		# 		})
-		# return contracted_edges
-
 		degrees = {node: len(neighbors) for node, neighbors in self.graph.items()}
 
 		# Nœuds topologiques = tous ceux qui ne sont PAS de degré 2
@@ -104,10 +69,6 @@ class LineSegmentSeparator :
 
 		contracted_edges = []
 		visited_half_edges = set()
-
-		# def edge_key(a, b):
-		# 	return frozenset((a, b))
-			# return (a, b) if a < b else (b, a)
 
 		# Parcours à partir de chaque nœud topologique
 		for start in topological_nodes:
@@ -328,8 +289,8 @@ class LineSegmentSeparator :
 				depart_switch_id = self.switches[node]
 				arrival_switch_id = self.switches[neighbor]
 				if self.tracks[node][neighbor] :
-					for i in range(len(self.tracks[node][neighbor]) - 1) :
-						path.append([list(self.tracks[node][neighbor][i]), list(self.tracks[node][neighbor][i + 1])])
+					for i in range(len(self.tracks[node][neighbor])) :
+						path.append(list(self.tracks[node][neighbor][i]))
 					tracks_df.loc[track_id] = [track_id, depart_switch_id, arrival_switch_id, path]
 				else : path = None
 				track_id += 1
