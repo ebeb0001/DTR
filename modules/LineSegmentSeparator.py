@@ -3,6 +3,9 @@ import numpy as np
 import json
 import argparse
 from collections import defaultdict
+from copy import deepcopy
+import math
+from pyproj import Transformer
 
 class LineSegmentSeparator :
 	def __init__(self, filename : str, separator : str, output_dir : str) :
@@ -18,6 +21,7 @@ class LineSegmentSeparator :
 		self.graph : defaultdict = defaultdict(set)
 		self.simplified_graph : defaultdict = defaultdict(set)
 		self.tracks : defaultdict = defaultdict(dict) 
+		self.transformer : Transformer = Transformer.from_crs("EPSG:4326", "EPSG:32631", always_xy=True)
 
 	def parseCoordinates(self, coord_str : str) -> list[list[float]] | None :
 		try:
@@ -59,6 +63,22 @@ class LineSegmentSeparator :
 		return frozenset((p1, p2))
 		# return (p1, p2) if p1 < p2 else (p2, p1)
 
+	def angle_between(self, previous, current, next_) -> float :
+		previous = self.transformer.transform(previous[1], previous[0])
+		current = self.transformer.transform(current[1], current[0])
+		next_ = self.transformer.transform(next_[1], next_[0])
+		x1, y1 = current[0] - previous[0], current[1] - previous[1]
+		x2, y2 = next_[0] - current[0], next_[1] - current[1]
+
+		n1 = math.hypot(x1, y1)
+		n2 = math.hypot(x2, y2)
+		if n1 == 0 or n2 == 0:
+			return None
+
+		cos_theta = (x1 * x2 + y1 * y2) / (n1 * n2)
+		cos_theta = max(-1.0, min(1.0, cos_theta))
+		return math.degrees(math.acos(cos_theta))
+
 	def contract_2_degree_nodes(self) -> dict[str, list[dict[str :  list[tuple[float, float, float]]
 	| tuple[float, float, float]]]] :
 		print("Contracting degree-2 nodes...")
@@ -96,7 +116,19 @@ class LineSegmentSeparator :
 						# Cas anormal, on arrête proprement
 						break
 
-					next_node = neighbors[0] if neighbors[1] == prev else neighbors[1]
+					candidates = [n for n in neighbors if n != prev]
+					if not candidates:
+						break
+
+					next_node = candidates[0]
+
+					angle = self.angle_between(prev, current, next_node)
+					if angle is None:
+						break
+
+					# à ajuster selon tes données
+					if not (0.0 <= angle <= 45.0):
+						break
 
 					hk = self.edgeKey(current, next_node)
 					if hk in visited_half_edges:
@@ -174,69 +206,8 @@ class LineSegmentSeparator :
 				visited_cycle_nodes.update(component)
 		return contracted_edges, special_cycles
 
-	def buildCycles(self) -> list[list[tuple[float, float, float]]] :
-		print("Building cycles...")
-		degrees : dict[tuple[float, float, float] : int] = {node: len(neighbors) 
-		for node, neighbors in self.graph.items()}
-		degree_2_nodes : set[tuple[float, float, float]] = {node for node, degree
-		in degrees.items() if degree == 2}
-		cycles : list[list[tuple[float, float, float]]] = []
-		visited_cycle_nodes = set()
-		cmpt = 0
-		for node in degree_2_nodes :
-			if str(node) in visited_cycle_nodes :
-				continue
-			component : list[tuple[float, float, float]] = []
-			stack : list[tuple[float, float, float]] = [node]
-			local_visited = set()
-			while stack :
-				# print("stack")
-				current = stack.pop()
-				# print(current, str(current) in local_visited)
-				if str(current) in local_visited :
-					# print("visited")
-					continue
-				local_visited.add(str(current))
-				# print(current, str(current) in local_visited)
-				component.append(current)
-				for neighbor in self.graph[current] :
-					if neighbor in degree_2_nodes :
-						stack.append(neighbor)
-			print("out", cmpt, len(visited_cycle_nodes))
-			cmpt += 1
-			component_set = set(component)
-			is_pure_cycle = all(
-				len(self.graph[n]) == 2  and 
-				all(v in component_set for v in self.graph[n]) for n in component
-			)
-
-			if is_pure_cycle :
-				ordered_cycle = []
-				start = component[0]
-				neighbors = list(self.graph[start])
-				previous = None
-				current = start
-				while True :
-					# print("yep")
-					ordered_cycle.append(current)
-					visited_cycle_nodes.add(str(current))
-					next_nodes = [n for n in self.graph[current] if n != previous]
-					if not next_nodes :
-						break
-					previous, current = current, next_nodes[0]
-					if current == start :
-						break
-					if current in ordered_cycle :
-						break
-				cycles.append(ordered_cycle)
-			else :
-				visited_cycle_nodes.update(component)
-		return cycles
-
 	def buildSimplifiedGraph(self) -> None :
 		print("Building simplified graph...")
-		# contracted_edges : dict[tuple[float, float, float] : int] = self.contract_2_degree_nodes()
-		# cycles : list[list[tuple[float, float, float]]] = self.buildCycles()
 		contracted_edges, cycles = self.contract_2_degree_nodes()
 		for segment in contracted_edges:
 			a = segment["start"]
@@ -245,10 +216,10 @@ class LineSegmentSeparator :
 			if a != b:
 				self.simplified_graph[a].add(b)
 				self.simplified_graph[b].add(a)
-				if a not in self.tracks or b not in self.tracks[a] :
-					self.tracks[a][b] = segment["path"]
-				if b not in self.tracks or a not in self.tracks[b] :
-					self.tracks[b][a] = segment["path"].reverse()
+				link = self.edgeKey(a, b)
+				if link not in self.tracks :
+					self.tracks[link] = []
+				self.tracks[link].append(segment["path"])
 		for cycle in cycles:
 			for i in range(len(cycle) - 1):
 				a = cycle[i]
@@ -256,10 +227,9 @@ class LineSegmentSeparator :
 				if a != b:
 					self.simplified_graph[a].add(b)
 					self.simplified_graph[b].add(a)
-					if a not in self.tracks or b not in self.tracks[a] :
-						self.tracks[a][b] = None
-					if b not in self.tracks or a not in self.tracks[b] :
-						self.tracks[b][a] = None
+					link = self.edgeKey(a, b)
+					if link not in self.tracks :
+						self.tracks[link] = None
 		print("Simplified graph building completed successfully.")
 
 	def loadSwitches(self) -> None :	
@@ -267,9 +237,9 @@ class LineSegmentSeparator :
 		node_id : int = 0
 		switche_df : pd.DataFrame = pd.DataFrame(columns=["ID", "X", "Y", "Elevation"])
 		for node in self.simplified_graph :
-			switche_df.loc[node_id] = [node_id, node[0], node[1], node[2]]
-			self.switches[node] = node_id
-			node_id += 1
+				switche_df.loc[node_id] = [node_id, node[0], node[1], node[2]]
+				self.switches[node] = node_id
+				node_id += 1
 		switche_df = switche_df.astype({
 			"ID" : int,
 			"X" : float,
@@ -282,17 +252,13 @@ class LineSegmentSeparator :
 		print("Loading main tracks dataframe...")
 		track_id : int = 0
 		tracks_df : pd.DataFrame = pd.DataFrame(columns=["ID", "Departure_switch", "Arrival_switch", "Path"])
-		
-		for node in self.simplified_graph :
-			for neighbor in self.simplified_graph[node] :
-				path = []
-				depart_switch_id = self.switches[node]
-				arrival_switch_id = self.switches[neighbor]
-				if self.tracks[node][neighbor] :
-					for i in range(len(self.tracks[node][neighbor])) :
-						path.append(list(self.tracks[node][neighbor][i]))
-					tracks_df.loc[track_id] = [track_id, depart_switch_id, arrival_switch_id, path]
-				else : path = None
+		for link in self.tracks :
+			a, b = link
+			depart_switch_id = self.switches[a]
+			arrival_switch_id = self.switches[b]
+			for p in self.tracks[link] :
+				path = [list(node) for node in p] if p else None
+				tracks_df.loc[track_id] = [track_id, depart_switch_id, arrival_switch_id, path]
 				track_id += 1
 		tracks_df = tracks_df.astype({
 			"ID" : int,

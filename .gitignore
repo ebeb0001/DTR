@@ -214,3 +214,4 @@ dump/
 new_start/
 bin/
 simulations/
+*.html

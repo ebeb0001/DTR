@@ -26,9 +26,9 @@ class LineSegmentsETL(ETL) :
 				F.transform(
 					F.col("parsed_geo_shape.coordinates"),
 					lambda coord : F.array(
-						F.round(coord.getItem(1).cast("double"), self.nb_decimals),
-						F.round(coord.getItem(0).cast("double"), self.nb_decimals),
-						F.round(coord.getItem(2).cast("double"), self.nb_decimals),
+						F.round(coord.getItem(1).cast("double") * 1e6) / 1e6,
+						F.floor(coord.getItem(0).cast("double") * 1e6) / 1e6,
+						F.round(coord.getItem(2).cast("double") * 1e6) / 1e6,
 					)
 				)
 			)

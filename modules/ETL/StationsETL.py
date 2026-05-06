@@ -12,8 +12,8 @@ class StationsETL(ETL) :
 	def convert(self) -> None :
 		super().convert()
 		### Converting the column "Geo Point" ###
-		x = F.split(F.col("Geo Point"), ",").getItem(0).cast("double")
-		y = F.split(F.col("Geo Point"), ",").getItem(1).cast("double")
+		x = F.floor((F.split(F.col("Geo Point"), ",").getItem(0).cast("double") * 1e6) / 1e6)
+		y =  F.floor((F.split(F.col("Geo Point"), ",").getItem(1).cast("double") * 1e6) / 1e6)
 		self.dataframe = (
 			self.dataframe
 			.withColumn("Geo_x", F.round(x, self.nb_decimals))
