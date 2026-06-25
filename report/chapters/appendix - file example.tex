@@ -1,0 +1,383 @@
+\chapter{File examples}
+\section{Data extraction and transformation}
+{\scriptsize
+\begin{lstlisting}[language=Python, , basicstyle=\ttfamily, frame=single, caption={data extraction code}]
+import requests
+import json
+
+def get_query(area : int, filter : str) :
+    query : str = f"""
+    [out:json]
+    [timeout:60]
+    ;
+    area({area})->.searchArea;
+    (
+    nwr
+        {filter}
+        (area.searchArea);
+    );
+    out geom;
+    """
+    return query
+
+def export_railway_network(area : int) :
+    URL = "https://overpass-api.de/api/interpreter"
+    filters = {
+        "track_sections" : "['railway'='rail']",
+        "buffer_stops" : "['railway'='buffer_stop']",
+        "switches" : "['railway'='switch']",
+        "signals" : "['railway'='signal']",
+        "stops" : "['railway'='stop']",
+        "stations" : "['railway'='station']['operator'='NMBS/SNCB']",
+    }
+    data = {}
+    for filter in filters :
+        query = get_query(area, filters[filter])
+        response = requests.get(URL, data=query)
+        if response.status_code == 200 :
+            data[filter] = response.json()
+        response.close()
+    return data
+
+if __name__ == "__main__" :
+    data = export_railway_network(3600386970)
+    for name in data :
+        with open(f"data/{name}.json", "w", encoding="utf-8") as f :
+            json.dump(data[name], f, indent=4, ensure_ascii=False)
+\end{lstlisting}
+}
+
+{\scriptsize
+\begin{lstlisting}[language=Python, basicstyle=\ttfamily, frame=single, caption={transformation of OSM track data to OSRD track}]
+tracks_sep = {}
+for track in track_sections :
+    sep = set()
+    track_coords = get_coords(track)
+    for coord in track_coords :
+        for t in track_sections :
+            if track["id"] != t["id"] :
+                t_coords = get_coords(t)
+                if coord in t_coords :
+                    index = track_coords.index(coord)
+                    if index != 0 and index != (len(track_coords) - 1) :
+                        sep.add(index)
+    sep = list(sep)
+    sep.sort()
+    tracks_sep[track["id"]] = 
+    [sep if len(sep) > 0 else None, f"size : {len(track_coords)}"]
+    
+track_sections_updated = {}
+for track in track_sections :
+    cmpt = 0
+    track_id = track["id"]
+    sep = tracks_sep[track_id][0]
+    track_coords = get_coords(track)
+    track_sections_updated[track_id] = []
+    separators = tracks_sep[track_id][0]
+    if separators is None :
+        track_sections_updated[track_id] = track_coords
+    else :
+        for sep in separators :
+            track_sections_updated[track_id].append([track_coords[cmpt]])
+            while (cmpt + 1) <= sep and (cmpt + 1) < len(track_coords) :
+                cmpt += 1
+                track_sections_updated[track_id][-1].append(track_coords[cmpt])
+        track_sections_updated[track_id].append([track_coords[cmpt]])
+        for i in range(cmpt + 1, len(track_coords)) :
+            track_sections_updated[track_id][-1].append(track_coords[i])
+
+for track in track_sections :
+    track_id = track["id"]
+    tmp = track_sections_updated[track_id][0]
+    if isinstance(tmp, tuple) :
+        track_name = f"{track_id}"
+        line_name = f"{track_name}_line"
+        length = get_length(track_sections_updated[track_id])
+        track_section = infraBuilder.add_track_section(
+        length = length, 
+        track_name = track_name, 
+        line_name = line_name, 
+        coordinates = track_sections_updated[track_id] 
+        )
+    else :
+        for i, section in enumerate(track_sections_updated[track_id]) :
+            track_name = f"{track_id}_part_{i}"
+            line_name = f"{track_name}_line"
+            length = get_length(section)
+            track_section = infraBuilder.add_track_section(
+            length = length, 
+            track_name = track_name, 
+            line_name = line_name, 
+            coordinates = section 
+            )
+\end{lstlisting}
+}
+
+\section{Data standards}
+\subsection{RailML}
+{\scriptsize
+\begin{lstlisting}[language=XML, basicstyle=\ttfamily, frame=single, caption={track in RailML}]]
+    <track id="tr01" name="track a02" type="secondaryTrack" mainDir="none">
+        <trackTopology>
+          <trackBegin pos="0" id="tr01_tb">
+            <bufferStop id="tr01_bs01"/>
+          </trackBegin>
+          <trackEnd pos="500" id="tr01_te">
+            <connection ref="tr03_c03" id="tr01_c01"/>
+          </trackEnd>
+          <crossSections>
+            <crossSection id="tr01_cs01" name="Gleis 1" 
+            xml:lang="de" ocpRef="ocp02" pos="300.0" 
+            absPos="300.0" type="station"/>
+          </crossSections>
+        </trackTopology>
+        <trackElements>
+          <platformEdges>
+            <platformEdge id="tr01_pe01" name="Gleis 2" 
+            xml:lang="de" pos="200" dir="up" absPos="200" 
+            side="left" height="550" length="200"/>
+          </platformEdges>
+        </trackElements>
+        <ocsElements>
+          <signals>
+            <signal id="tr01_si01" code="68N1" pos="450" 
+            absPos="450" dir="up" function="exit" type="main" 
+            ocpStationRef="ocp02">
+              <etcs switchable="false" level_2="true"/>
+            </signal>
+          </signals>
+          <trainDetectionElements>
+            <trainDetector id="tr01_td01" pos="475" absPos="475" 
+            axleCounting="true" directionDetection="true" 
+            medium="inductive"/>
+          </trainDetectionElements>
+        </ocsElements>
+      </track>
+\end{lstlisting}
+}
+
+\subsection{GTFS}
+{\scriptsize
+\begin{lstlisting}[basicstyle=\ttfamily, frame=single, caption={stops.txt}]
+stop_id,level_id,stop_name,stop_lat,stop_lon,location_type,parent_station
+F12,,5 Av/53 St,40.760167,-73.975224,1,
+E1,L0,5 Av/53 St SW,40.760474,-73.976099,2,F12
+E2,L0,5 Av/53 St NE,40.76035,-73.97546,2,F12
+E3,L0,5 Av/53 St SE,40.760212,-73.975512,2,F12
+E4,L0,Madison/53 St NE,40.759612,-73.973731,2,F12
+E5,L0,Madison/53 St SE,40.759491,-73.973820,2,F12
+N1,L1,,40.760457,-73.975912,3,F12
+N2,L1,,40.760531,-73.976111,3,F12
+N3,L1,,40.759746,-73.974203,3,F12
+N4,L1,,40.759679,-73.974064,3,F12
+F12S,,5 Av/53 St,40.760167,-73.975224,0,F12
+B1,L2,,40.759746,-73.974203,4,F12S
+B3,L2,,40.759828,-73.974442,4,F12S
+F12N,,5 Av/53 St,40.760167,-73.975224,0,F12
+B2,L3,,40.760457,-73.975912,4,F12N
+B4,L3,,40.760375,-73.975729,4,F12N
+\end{lstlisting}
+}
+
+{\scriptsize
+\begin{lstlisting}[basicstyle=\ttfamily, frame=single, caption={routes.txt}]
+route_id,route_short_name,route_long_name,route_desc,route_type
+A,17,Mission,"The ""A"" route travels from lower Mission to Downtown.",3
+\end{lstlisting}
+}
+
+{\scriptsize
+\begin{lstlisting}[basicstyle=\ttfamily, frame=single, caption={trips.txt}]
+route_id,service_id,trip_id,trip_headsign,block_id
+A,WE,AWE1,Downtown,1
+A,WE,AWE2,Downtown,2
+\end{lstlisting}
+}
+
+\section{OSM}
+
+{\scriptsize
+\begin{lstlisting}[basicstyle=\ttfamily, frame=single, caption={OSM query}]
+[out:json]
+    [timeout:60]
+    ;
+    area({area})->.searchArea;
+    (
+    nwr
+        {filter}
+        (area.searchArea);
+    );
+    out geom;
+\end{lstlisting}
+}
+
+\section{SUMO}
+
+{\scriptsize
+\begin{lstlisting}[language=XML, basicstyle=\ttfamily, frame=single, caption={rail connections}]
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE net>
+<edges>
+    <edge id="track1" from="station1" to="j1" numLanes="1" speed="20"/>
+    <edge id="track2" from="j1" to="j2" numLanes="1" speed="20"/>
+    <edge id="track3" from="j2" to="station2" numLanes="1" speed="20"/>
+    <edge id="track4" from="j2" to="switch1" numLanes="1" speed="20"/>
+    <edge id="track5" from="switch1" to="station3" numLanes="1" speed="20"/>
+</edges>
+\end{lstlisting}
+}
+
+{\scriptsize
+\begin{lstlisting}[language=XML, basicstyle=\ttfamily, frame=single, caption={stations, switches, platforms}]
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE net>
+<nodes>
+    <node id="station1" x="0" y="0" type="railway_platform"/>
+    <node id="j1" x="250" y="50" type="railway_crossing"/>
+    <node id="j2" x="500" y="0" type="railway_crossing"/>
+    <node id="switch1" x="500" y="100" type="railway_switch"/>
+    <node id="station2" x="750" y="-50" type="railway_platform"/>
+    <node id="station3" x="750" y="100" type="railway_platform"/>
+</nodes>
+\end{lstlisting}
+}
+
+{\scriptsize
+\begin{lstlisting}[language=XML, basicstyle=\ttfamily, frame=single, caption={train routes}]
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE net>
+<routes>
+    <vType id="trainType" accel="0.5" decel="0.5" length="30" maxSpeed="20"/>
+    
+    <route id="route1" edges="track1 track2 track3"/>
+    <route id="route2" edges="track3 track2 track1"/>
+    <route id="route3" edges="track1 track2 track4 track5"/>
+    <route id="route4" edges="track5 track4 track2 track1"/>
+    
+    <vehicle id="train1" type="trainType" route="route1" depart="0"/>
+    <vehicle id="train3" type="trainType" route="route1" depart="50"/>
+    <vehicle id="train5" type="trainType" route="route1" depart="100"/>
+    <stop vehicle="train1" edge="track1" duration="30"/>
+    <stop vehicle="train1" edge="track3" duration="30"/>
+    <stop vehicle="train3" edge="track1" duration="30"/>
+    <stop vehicle="train3" edge="track3" duration="30"/>
+    <stop vehicle="train5" edge="track1" duration="30"/>
+    <stop vehicle="train5" edge="track3" duration="30"/>
+    
+    <vehicle id="train2" type="trainType" route="route3" depart="100"/>
+    <vehicle id="train4" type="trainType" route="route3" depart="150"/>
+    <vehicle id="train6" type="trainType" route="route3" depart="200"/>
+    <stop vehicle="train2" edge="track1" duration="30"/>
+    <stop vehicle="train2" edge="track5" duration="30"/>
+    <stop vehicle="train4" edge="track1" duration="30"/>
+    <stop vehicle="train4" edge="track5" duration="30"/>
+    <stop vehicle="train6" edge="track1" duration="30"/>
+    <stop vehicle="train6" edge="track5" duration="30"/>
+</routes>
+\end{lstlisting}
+}
+
+\section{OSRD}
+
+{\scriptsize
+\begin{lstlisting}[language=XML, basicstyle=\ttfamily, frame=single, caption={DSL structure}]
+{
+  "buffer_stops": [
+    {
+      "id": "<string>",
+      "position": 67,
+      "track": "<string>"
+    }
+  ],
+  "detectors": [
+    {
+      "id": "<string>",
+      "position": 67,
+      "track": "<string>"
+    }
+  ],
+  "electrifications": [
+    {
+      "id": "<string>",
+      "track_ranges": [
+        {
+          "applicable_directions": "START_TO_STOP",
+          "begin": 57,
+          "end": 55,
+          "track": "<string>"
+        }
+      ],
+      "voltage": "<string>"
+    }
+  ],
+  "extended_switch_types": [
+    {
+      "groups": {},
+      "id": "<string>",
+      "ports": [
+        "<string>"
+      ]
+    }
+  ],
+  "neutral_sections": [
+    {
+      "id": "<string>",
+      "lower_pantograph": true,
+      "track_ranges": [
+        {
+          "begin": 57,
+          "direction": "START_TO_STOP",
+          "end": 55,
+          "track": "<string>"
+        }
+      ]
+    }
+  ],
+  "operational_points": [
+    {
+      "id": "<string>",
+      "parts": [
+        {
+          "position": 67,
+          "track": "<string>"
+        }
+      ]
+    }
+  ],
+  "routes": [],
+  "signals": [
+    {
+      "direction": "START_TO_STOP",
+      "id": "<string>",
+      "position": 67,
+      "sight_distance": 43,
+      "track": "<string>"
+    }
+  ],
+  "speed_sections": [
+    {
+      "id": "<string>",
+      "speed_limit_by_tag": {},
+      "track_ranges": [
+        {
+          "applicable_directions": "START_TO_STOP",
+          "begin": 57,
+          "end": 55,
+          "track": "<string>"
+        }
+      ]
+    }
+  ],
+  "switches": [
+    {
+      "group_change_delay": 62,
+      "id": "<string>",
+      "ports": {},
+      "switch_type": "<string>"
+    }
+  ],
+  "track_sections": []
+}
+    
+\end{lstlisting}
+}

@@ -13,7 +13,7 @@ for _, row in tracks.iterrows():
         if end not in switches:
             switches[end] = 0
         switches[end] += 1
-real_switches = [s for s in switches if switches[s] > 1]
+real_switches = [s for s in switches if switches[s] > 2]
 
 print("Switches Coverage:")
 print("==========================")
