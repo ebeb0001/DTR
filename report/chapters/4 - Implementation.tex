@@ -69,8 +69,7 @@ These datasets constitute the foundation upon which the simulation network is ge
 \begin{figure}[h]
     \centering
     % \includegraphics[width=0.8\textwidth]{figures/implementation/macro-level-data-processing-pipeline.png}
-    \caption{Macro-Level Data Processing Pipeline}
-    \label{fig:macro-level-data-processing-pipeline}
+    \caption{Macro-Level Data Processing Pipeline}\label{fig:macro-level-data-processing-pipeline}
 \end{figure}
 
 
@@ -157,7 +156,7 @@ artificial assumptions.
 
 \subsection{Simulation}
 After the generation of the macro-level railway network and the reconstruction of train routes from operational data, 
-the simulation scenario can be executed within SUMO. The objective of this step is to validate the ability of the 
+the simulation scenario can be executed within SUMO\@. The objective of this step is to validate the ability of the 
 generated model to reproduce railway movements at a station-to-station level while keeping the simulation computationally 
 manageable.
 
@@ -188,7 +187,7 @@ number of train movements inserted into the simulation. A short simulation perio
 while a longer period can be selected to analyse traffic behaviour over multiple days.
 
 Once the network, train routes, stop definitions, and simulation configuration files have been generated, the simulation 
-can be launched directly in SUMO. During execution, trains circulate along the station-to-station graph according to the 
+can be launched directly in SUMO\@. During execution, trains circulate along the station-to-station graph according to the 
 reconstructed timetable. Their movements are mainly governed by the generated routes, departure times, and travel times 
 associated with the railway connections. The simulation produces standard SUMO output files, including trip information, 
 stop information, and summary statistics. These outputs are then processed in order to obtain structured datasets that 
@@ -214,7 +213,7 @@ The complete workflow implemented in the macro-level model can therefore be summ
     \item Infrastructure and operational data are first preprocessed and standardized.
     \item A station-to-station railway network is then generated and converted into a SUMO network.
     \item Historical punctuality records are subsequently transformed into train routes.
-    \item These routes are simulated within SUMO.
+    \item These routes are simulated within SUMO\@.
     \item The resulting outputs are finally converted into datasets suitable for analysis and validation.
 \end{enumerate}
 
@@ -414,8 +413,7 @@ platforms can be uniquely mapped to simulation entities. Such a requirement is p
 routing, timetable generation, and railway traffic simulation tasks.
 
 
-\subsubsection{Dual Graph Construction}
-\label{sec:dual_graph}
+\subsubsection{Dual Graph Construction}\label{sec:dual_graph}
 Once the railway infrastructure has been segmented into operational track sections, a graph representation is constructed 
 to efficiently compute train routes through the network. The proposed approach adopts a dual graph representation, where 
 each railway track segment becomes a graph node, while the possible transitions between consecutive track segments are 
@@ -571,9 +569,9 @@ the simulation of real train movements while preserving both the actual timetabl
 
 \subsection{Simulation}
 Once the micro-level infrastructure has been generated and train trips have been created, the resulting scenario can be 
-simulated in SUMO. In contrast with the macro-level model, the micro-level simulation relies on a detailed representation 
-of the railway infrastructure. Tracks, switches, platforms, and operational segments are explicitly represented, which 
-allows trains to circulate through a much more realistic network topology.
+simulated in SUMO\@. In contrast with the macro-level model, the micro-level simulation relies on a detailed 
+representation of the railway infrastructure. Tracks, switches, platforms, and operational segments are explicitly 
+represented, which allows trains to circulate through a much more realistic network topology.
 
 The simulation procedure is designed to support two different types of traffic scenarios. The first scenario uses 
 randomly generated trips, while the second attempts to reproduce real train movements extracted from operational data. 
