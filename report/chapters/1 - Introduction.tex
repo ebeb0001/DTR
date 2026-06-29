@@ -1,9 +1,133 @@
-\chapter{Introduction}
+\chapter{Introduction}\label{chap:introduction}
+Railway networks play an essential role in modern transportation systems. They support the daily mobility of passengers, 
+contribute to freight transportation, and constitute a strategic infrastructure for sustainable mobility. In dense railway 
+networks such as the Belgian one, the ability to operate trains efficiently, safely, and reliably is particularly 
+important. A large number of trains, stations, tracks, and operational constraints interact continuously, making railway 
+traffic management a complex task.
 
-\section{Context and Motivation}
+This complexity is not only due to the size of the infrastructure, but also to the nature of railway operations. Trains 
+must follow predefined routes and timetables, share limited track capacity, respect safety constraints, and interact with 
+infrastructure elements such as switches, platforms, and stations. A small disruption in one part of the network can 
+propagate to other trains and stations, affecting punctuality and service quality. As a result, railway operators and 
+researchers increasingly rely on digital tools to better understand, simulate, and analyse railway systems.
+
+In this context, the concept of a digital twin has gained increasing attention. Informally, a digital twin can be 
+understood as a virtual counterpart of a real physical system. It is not only a static model or a simple visualization of 
+the system, but rather a digital representation that can be connected to data, updated over time, and used to observe, 
+simulate, and analyse the behaviour of the physical system. Applied to railways, a digital twin may represent parts of 
+the railway infrastructure, train movements, operational constraints, and traffic conditions. Such a representation can 
+help explore how the network behaves, test different scenarios, and support decision-making.
+
+Simulation is a central component of this vision. Before a railway digital twin can be used for prediction, optimization, 
+or real-time decision support, it must first be possible to construct a coherent simulation model from available 
+infrastructure and operational data. Simulation makes it possible to reproduce train movements in a controlled 
+environment, evaluate whether generated routes are feasible, and compare simulated behaviour with real railway data.
+
+This thesis focuses on the construction of a simulation-oriented railway digital twin using SUMO.\@ SUMO is a traffic 
+simulation platform originally designed for road traffic, but its flexible network and route representation make it 
+possible to adapt it to railway use cases. The work investigates how railway infrastructure and operational data can be 
+transformed into simulation-ready artefacts, and how different levels of railway network representation can be used to 
+support train simulation.
+
+% \section{Context and Motivation}
 
 \section{Problem Statement}
+Despite the availability of open data sources and simulation platforms, constructing a realistic railway simulation 
+remains a difficult task. Railway data is heterogeneous by nature: infrastructure data describes physical components 
+such as stations, tracks, switches, and platforms, while operational data describes train movements, schedules, and 
+punctuality records. These datasets do not always share the same structure, granularity, or level of detail. Consequently, 
+integrating them into a single simulation framework requires several processing, modeling, and approximation steps.
+
+A first difficulty concerns the representation of the railway infrastructure. At a high level, a railway network can be 
+represented as a graph where stations are connected by railway links. This abstraction is useful because it simplifies 
+the network and makes it easier to reconstruct train movements between stations. However, it does not represent detailed 
+infrastructure elements such as platforms, switches, parallel tracks, or station-level routing constraints. These details 
+are important when the objective is to simulate train circulation more realistically.
+
+A second difficulty appears when moving toward a more detailed representation of the network. At the micro level, tracks, 
+platforms, and switches must be represented explicitly. This provides a more realistic description of the infrastructure, 
+but it also introduces new challenges. The network must be topologically consistent, platforms must be associated with 
+the correct tracks, and valid routes must exist between consecutive stations. Even small errors in the reconstructed 
+infrastructure can prevent trains from being routed correctly.
+
+A third difficulty concerns the integration of real operational data. Punctuality data provides information about train 
+stops, arrival times, departure times, and delays, but it does not directly provide the exact physical route followed by 
+each train inside the infrastructure. Therefore, a route must be reconstructed from the available station sequences and 
+mapped onto the generated simulation network. When the network is simplified, this process is easier but less precise. 
+When the network is detailed, the process becomes more realistic but also more fragile.
+
+These challenges lead to the central research question of this thesis:
+
+\begin{quote}
+    How can a railway digital twin simulation be constructed using SUMO and heterogeneous railway datasets, and to what 
+    extent can real operational data be integrated into feasible macro-level and micro-level railway simulations?
+\end{quote}
+
+This question is addressed by studying two complementary modeling approaches. The first one is a macro-level model, where 
+stations are represented as nodes and station-to-station connections as edges. The second one is a micro-level model, 
+where detailed infrastructure elements such as tracks, switches, and platforms are explicitly represented. Together, these 
+two approaches make it possible to evaluate the trade-off between simplicity, scalability, infrastructure realism, and 
+simulation feasibility.
 
 \section{Objectives}
+The main objective of this thesis is to design and implement a data-driven pipeline for constructing a simulation-oriented 
+digital twin of a railway network. The focus is not to build a fully operational real-time digital twin, but rather to 
+study the foundations required to generate, simulate, and evaluate railway traffic scenarios from real-world data.
+
+More specifically, this work aims to construct railway simulation models at two different levels of abstraction. The 
+macro-level model is designed to represent the railway network as a station-to-station graph. Its purpose is to provide a 
+simplified but functional simulation environment in which real train trajectories can be reconstructed from punctuality 
+data. This model serves as a first validation of the complete pipeline, from data preprocessing to simulation execution.
+
+The second objective is to develop a micro-level model that represents the infrastructure in greater detail. This includes 
+the processing of track data, the detection of switches, the identification of platforms, the segmentation of track 
+sections, and the construction of routing structures. The objective of this model is to move closer to the physical 
+structure of the railway network and to evaluate whether more detailed simulations can be produced from the available data.
+
+Another objective is to compare different trip generation strategies. In the macro-level model, the focus is mainly on the 
+use of real operational data to reconstruct train movements. In the micro-level model, two approaches are considered: 
+synthetic trip generation and real-data-based trip generation. Synthetic trips are used to test the feasibility and 
+connectivity of the generated infrastructure, while real-data trips aim to reproduce observed railway operations more 
+accurately.
+
+Finally, this thesis aims to identify the main limitations encountered when building a railway digital twin simulation 
+from heterogeneous data. These limitations concern data availability, infrastructure completeness, modeling 
+assumptions, routing feasibility, and constraints imposed by the simulation platform. By analysing these issues, the work 
+provides methodological insights for future developments of railway digital twins.
+
+The expected outcome of this thesis is therefore not a perfect reproduction of the Belgian railway network, but a 
+structured and evaluated prototype demonstrating how railway data can be transformed into SUMO-compatible simulation 
+models. The contribution lies in the development of the modeling pipeline, the comparison between macro-level and 
+micro-level representations, and the identification of the technical challenges that must be addressed to progress toward 
+more complete railway digital twins.
 
 \section{Thesis Structure}
+The remainder of this thesis is organized as follows.
+
+Chapter~\ref{chap:stateoftheart} presents the state of the art. It introduces the concept of digital twins, first from a 
+general perspective and then in the context of railway systems. It also reviews the main components of railway 
+infrastructure and operations, discusses common approaches for railway network representation, and presents existing 
+railway simulation tools. Particular attention is given to SUMO and to its suitability for railway simulation.
+
+Chapter~\ref{chap:methodology} describes the proposed methodology. It positions the work with respect to the research 
+gaps identified in the literature and presents the overall framework followed throughout the project. This chapter also 
+justifies the choice of SUMO as the simulation platform and describes the infrastructure and operational datasets used in 
+the implementation.
+
+Chapter~\ref{chap:implementation} details the implementation of the proposed approach. It is divided into two main parts. 
+The first part presents the macro-level model, including data processing, network generation, trip generation, simulation, 
+and its limitations. The second part presents the micro-level model, including infrastructure modelling, switch detection, 
+platform detection, track segmentation, dual graph construction, trip generation, simulation, and its limitations.
+
+Chapter~\ref{chap:results} presents the results obtained from the implemented models. It analyses dataset coverage, 
+infrastructure modelling quality, simulation results, and computational performance. The objective of this chapter is to 
+evaluate how well the generated models represent the available railway data and how effectively they can be used for 
+simulation.
+
+Chapter~\ref{chap:limitations} discusses the main limitations of the proposed methodology. While some limitations are 
+briefly introduced in the implementation chapter, this chapter provides a more detailed analysis of issues related to 
+data quality, modelling assumptions, SUMO constraints, and the generalization of the approach to other railway networks.
+
+Chapter~\ref{chap:conclusion} concludes the thesis by summarizing the main contributions and findings. It also discusses 
+the practical implications of the work and presents future research directions, including counterfactual simulation, track 
+work planning, real-time forecasting, incident propagation, and the generalization of the proposed framework.
