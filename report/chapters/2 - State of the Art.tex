@@ -1,15 +1,192 @@
 \chapter{State of the Art}\label{chap:stateoftheart}
 
 \section{Digital Twins}
-\subsection{Definition, Capabilities and Limitations}
+Digital twins have become one of the central concepts associated with the digitalization of complex industrial systems 
+(\cite{DT_survey}). The term is used in many domains, including manufacturing, aerospace, healthcare, smart cities, energy 
+systems, and transportation (\cite{DT_survey,aircraft_digital_twin,turbomachinery_review}). Although the exact definition 
+may vary depending on the application domain, the general idea remains the same: a digital twin is a digital representation 
+of a physical system that is connected to data and used to analyse, simulate, monitor, or support decisions about the real 
+system (\cite{grieves2017digital,DT_survey}).
 
+In the context of this thesis, the concept of a digital twin is particularly relevant because railway networks are 
+complex, dynamic, and data-rich systems. They involve physical infrastructure, moving vehicles, operational rules, 
+timetables, delays, maintenance constraints, and safety requirements. A digital twin can therefore provide a structured 
+framework to combine infrastructure data, operational data, simulation models, and analytical tools into a coherent 
+representation of the railway system.
+
+\subsection{Definition, Capabilities and Limitations}
+The concept of digital twin was initially introduced in the context of product lifecycle management and later expanded to 
+other engineering and industrial domains. A commonly accepted definition describes a digital twin as a virtual 
+representation of a physical object, process, or system that is connected to its physical counterpart through data 
+exchange and that can be used throughout the lifecycle of the system. This definition emphasizes that a digital twin is 
+not merely a static model or a visualization tool. Its distinguishing characteristic is the relationship between the 
+physical entity and its digital counterpart.
+
+A digital twin can therefore be understood as the combination of three fundamental components: the physical system, the 
+virtual system, and the connection between them. The physical system corresponds to the real-world object or process being 
+represented. The virtual system is the digital model that describes the structure, behaviour, and state of the physical 
+system. The connection corresponds to the data flow that links both entities. This connection may be unidirectional, when 
+the physical system only updates the virtual model, or bidirectional, when the digital model can also influence decisions 
+or actions applied to the physical system.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{figures/digital_twin_architecture.png}
+    \caption{General architecture of a digital twin.}\label{fig:digital_twin_architecture}
+    % General architecture of a digital twin, showing the physical system, the virtual model, the data layer, 
+    % simulation/analytics services, and feedback loop
+\end{figure}
+
+A more formal way to describe a digital twin is to represent it as a system composed of several interacting elements 
+(\cite{tao2019five,DT_survey}):
+\begin{equation}
+    DT = (P, V, D, C, S)
+\end{equation}
+where $P$ denotes the physical system, $V$ the virtual representation, $D$ the data associated with the system, $C$ the 
+connection mechanisms between the physical and virtual entities, and $S$ the services built on top of the twin, such as 
+simulation, prediction, visualization, diagnosis, or optimization. This representation highlights that the digital twin is 
+not only a model, but an architecture in which data, models, and services are combined to support decision-making.
+
+This distinction is important because the term digital twin is sometimes used broadly to describe any digital model of a 
+real system. However, several authors distinguish between a digital model, a digital shadow, and a digital twin 
+(\cite{kritzinger2018digital}). A digital model is a digital representation of a system without automatic data exchange 
+with the physical system. A digital shadow receives data from the physical system, but the information flow is mainly 
+one-way. A digital twin represents a more advanced form, where the digital representation is continuously or regularly 
+updated from the physical system and can support feedback, analysis, or operational decisions (\cite{kritzinger2018digital}). 
+In this thesis, the proposed work is closer to a simulation-oriented digital twin foundation: it focuses on constructing 
+a coherent virtual railway representation from real infrastructure and operational data, which is a necessary step before 
+reaching a fully real-time and bidirectional digital twin.
+
+Digital twins are usually associated with several capabilities. The first is monitoring, which consists of observing the 
+state of a system using data collected from sensors, logs, operational records, or information systems. The second is 
+simulation, where the digital representation is used to reproduce the behaviour of the physical system under controlled 
+conditions (\cite{DT_survey,DT_smart_manufacturing}). The third is prediction, where historical and real-time data are 
+used to estimate future states, failures, delays, or performance indicators (\cite{DT_survey,aircraft_digital_twin,
+turbomachinery_review}). The fourth is optimization, where alternative scenarios are evaluated in order to support better 
+decisions. Finally, more advanced digital twins may support control or actuation, where decisions derived from the digital 
+model influence the operation of the physical system.
+
+These capabilities make digital twins particularly attractive for complex systems, but they also introduce significant 
+limitations. A digital twin is only as reliable as the data, models, assumptions, and synchronization mechanisms on which 
+it is based. If the data is incomplete, outdated, noisy, or inconsistent, the digital twin may provide misleading results. 
+Similarly, if the model is too simplified, it may fail to reproduce important physical or operational constraints. On the 
+other hand, if the model is too detailed, it may become computationally expensive and difficult to maintain.
+
+Another limitation concerns validation. Since a digital twin is expected to represent a real system, it must be evaluated 
+against real observations. This is challenging because real systems are often affected by hidden variables, incomplete 
+measurements, operational exceptions, and human decisions that are not always captured in the available data. For this 
+reason, the development of a digital twin is usually incremental. A first version may focus on static representation and 
+simulation, while later versions progressively integrate real-time data, predictive models, and optimization services.
 
 \subsection{Recent Developments and Applications}
+The development of digital twins has accelerated with the progress of several enabling technologies. The IoTs allows 
+physical systems to generate continuous streams of data (\cite{DT_survey}). Cloud computing and distributed architectures 
+provide the infrastructure required to store and process large volumes of information. Artificial intelligence and machine learning 
+make it possible to extract patterns, predict future states, and detect anomalies. Simulation tools provide an environment 
+in which alternative scenarios can be tested without disrupting the real system. Finally, visualization technologies, 
+including dashboards, 3D interfaces, and geographic information systems, help users interpret the state and behaviour of 
+the DT.\@
+
+Digital twins have first been widely adopted in manufacturing, where they support product design, production monitoring, 
+maintenance planning, and process optimization. In smart manufacturing, a digital twin can represent a machine, a 
+production line, or an entire factory. It can be used to monitor equipment status, simulate production scenarios, predict 
+failures, and improve resource allocation (\cite{DT_smart_manufacturing}). This domain is particularly important in the 
+literature because it provides many of the conceptual foundations later reused in other fields.
+
+In aerospace and mechanical engineering, digital twins are used to monitor the condition of critical assets and support 
+predictive maintenance. Aircraft, engines, turbines, and other complex mechanical systems generate large quantities of 
+operational data during their lifecycle. A digital twin can integrate this data with physics-based or data-driven models 
+in order to estimate wear, detect abnormal behaviour, and plan maintenance interventions before failures occur. Similar 
+principles are found in energy systems, where digital twins are used for turbines, power plants, and renewable energy 
+infrastructure (\cite{turbomachinery_review}).
+
+Digital twins are also increasingly studied in healthcare and smart cities. In healthcare, the objective may be to 
+represent medical devices, hospital workflows, or even patient-specific physiological models. In smart cities, digital 
+twins can integrate mobility data, infrastructure data, environmental data, and urban services to support planning and 
+decision-making. These examples show that digital twins are not limited to individual physical objects. They can also 
+represent complex systems composed of many interacting components.
+
+Across these application domains, digital twins generally serve four main purposes. First, they improve visibility by 
+providing a structured representation of a system that may otherwise be difficult to observe directly. Second, they 
+support experimentation by allowing users to test what-if scenarios in a virtual environment. Third, they improve 
+anticipation by enabling predictive analysis based on past and current data. Fourth, they support decision-making by 
+comparing alternative actions before they are applied to the real system.
+
+However, the maturity of digital twin implementations varies significantly. In some cases, the term digital twin refers 
+to a highly connected and dynamic system with real-time data exchange. In other cases, it refers to a simulation model or 
+a dashboard that is only periodically updated. This variation shows that the digital twin concept should not be treated 
+as a single technology, but rather as a framework that can be implemented at different levels of maturity. For this thesis, 
+the focus is placed on the simulation and data integration layers, which are essential prerequisites for more advanced 
+digital twin capabilities such as real-time forecasting, optimization, and decision support.
 
 
 \subsection{Applications in Railway networks}
+Railway systems are particularly suitable candidates for digital twin approaches. They combine physical infrastructure, 
+operational processes, moving assets, strict safety constraints, and large volumes of data. A railway network includes 
+tracks, switches, signals, stations, platforms, rolling stock, timetables, passenger flows, maintenance operations, and 
+traffic management rules. These elements interact continuously, and a local disturbance can propagate through the network. 
+As a result, railway operators require tools that can represent the current state of the network, simulate traffic 
+behaviour, evaluate disruptions, and support planning decisions.
 
+Digital twins for railway networks can be applied at different levels of granularity. At the asset level, a digital twin 
+can represent individual components such as tracks, switches, bridges, tunnels, trains, or signalling equipment. This type 
+of twin is particularly useful for condition monitoring and predictive maintenance. Sensor data, inspection records, and 
+maintenance logs can be used to estimate the health of the asset and identify when intervention is required.
 
+At the infrastructure level, a digital twin can represent the topology of the railway network. This includes the spatial 
+structure of tracks, stations, platforms, junctions, and operational segments. Such a representation is necessary to 
+analyse accessibility, capacity, routing possibilities, and infrastructure conflicts. In this thesis, this level is 
+central because the objective is to transform real railway infrastructure data into simulation-ready network models.
+
+At the operational level, a railway digital twin can represent train movements, schedules, delays, and traffic 
+interactions. This makes it possible to analyse how trains circulate through the network, how delays propagate, and how 
+infrastructure constraints affect service quality. A simulation-based digital twin can also be used to evaluate what-if 
+scenarios, such as modified timetables, temporary track closures, traffic disruptions, or infrastructure works.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{figures/railway_digital_twin_architecture.png}
+    \caption{Example of a railway digital twin architecture.}\label{fig:railway_digital_twin_architecture}
+    % Example of a railway digital twin architecture, showing infrastructure data, operational data, simulation model, 
+    % analytics layer, and decision-support services.
+\end{figure}
+
+Several applications can be identified in the railway domain. The first is predictive maintenance. Railway infrastructure 
+is expensive to inspect and maintain, and failures can have significant consequences on safety and service reliability. 
+A digital twin can combine sensor measurements, historical degradation data, and maintenance records to anticipate 
+failures and optimize maintenance planning. The second application is traffic management. By reproducing train movements 
+in a virtual environment, a digital twin can help evaluate congestion, detect bottlenecks, and test operational strategies. 
+The third application is delay analysis and propagation modelling. Since railway operations are strongly interconnected, 
+a delay affecting one train can influence many others. A digital twin can help identify where delays originate and how 
+they spread across the network.
+
+A fourth application is scenario testing. Railway operators often need to evaluate changes before implementing them in 
+the real network. Examples include timetable modifications, station layout changes, temporary closures, track works, or 
+emergency response strategies. A simulation-based digital twin makes it possible to test such scenarios in a controlled 
+environment and compare their expected impact. This capability is especially relevant for this thesis, since the proposed 
+approach focuses on generating railway simulations from real infrastructure and operational data.
+
+Railway digital twins also raise specific challenges. Railway networks are safety-critical systems, which means that simplified 
+models must be used with care. Accurate representation of tracks, switches, signals, platforms, and routing constraints is 
+necessary when the objective is to reproduce detailed operational behaviour. Data availability is another major challenge. 
+Infrastructure data may be incomplete, private, heterogeneous, or difficult to align with operational data. Finally, 
+railway systems operate at different spatial and temporal scales. A digital twin may need to represent long-distance 
+network connectivity, station-level infrastructure, and real-time traffic dynamics at the same time.
+
+For these reasons, railway digital twins often require a layered approach. A macro-level representation can be used to 
+model station-to-station connectivity and global train movements. A micro-level representation can then be used to 
+represent detailed infrastructure such as tracks, switches, and platforms. This distinction is directly reflected in the 
+methodology of this thesis, where both macro-level and micro-level railway models are developed. The macro-level model 
+provides a simplified and scalable representation of the network, while the micro-level model aims to capture more detailed 
+infrastructure constraints. Together, these two levels contribute to the construction of a simulation-oriented foundation 
+for a railway digital twin.
+
+In summary, digital twins provide a relevant conceptual and technical framework for railway simulation. They offer a way to 
+combine infrastructure data, operational data, simulation models, and analytical tools into a unified system. However, 
+building a complete railway digital twin requires several intermediate steps: reconstructing the infrastructure, generating 
+valid train routes, integrating real operational data, validating simulation outputs, and identifying the limitations of 
+the model. The work presented in this thesis focuses on these foundational steps, with the objective of preparing the 
+ground for future digital twin applications such as real-time forecasting, disruption analysis, and decision support.
 
 \section{Railway Systems}
 \subsection{Railway infrastructure}

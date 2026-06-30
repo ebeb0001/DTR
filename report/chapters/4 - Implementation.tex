@@ -66,11 +66,11 @@ The output of the preprocessing pipeline consists of a collection of cleaned dat
 standardized station information, station-to-station railway connections, and train circulation records.
 These datasets constitute the foundation upon which the simulation network is generated.
 
-\begin{figure}[h]
-    \centering
-    % \includegraphics[width=0.8\textwidth]{figures/implementation/macro-level-data-processing-pipeline.png}
-    \caption{Macro-Level Data Processing Pipeline}\label{fig:macro-level-data-processing-pipeline}
-\end{figure}
+% \begin{figure}[h]
+%     \centering
+%     % \includegraphics[width=0.8\textwidth]{figures/implementation/macro-level-data-processing-pipeline.png}
+%     \caption{Macro-Level Data Processing Pipeline}\label{fig:macro-level-data-processing-pipeline}
+% \end{figure}
 
 
 \subsection{Railway Network Generation}
@@ -297,8 +297,8 @@ not classified as switches. In contrast, nodes connected to three or more neighb
 merging points and are identified as switches. These locations correspond to operational infrastructure elements that 
 allow trains to change routes within the network.
 
-The resulting switch and edge datasets forms the foundation of the micro-level network model and is subsequently used for graph 
-construction, route generation, and simulation.
+The resulting switch and edge datasets forms the foundation of the micro-level network model and is subsequently used for 
+graph construction, route generation, and simulation.
 
 \subsubsection{Platform Detection}
 The infrastructure dataset provides the geographical position of railway stations as well as the number of platforms 
@@ -315,7 +315,7 @@ segments and assigns them to the station.
 
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_initial_setup.png}
+    \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_initial_setup.png}
     \caption{Example of platform detection initial setup}
 \end{figure}
 
@@ -327,7 +327,7 @@ segments.
 
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_searching_zone.png}
+    \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_searching_zone.png}
     \caption{Example of platform detection searching zone}
 \end{figure}
 
@@ -355,7 +355,7 @@ the platform detection process.
 
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_ranking.png}
+    \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_ranking.png}
     \caption{Example of platform detection ranking when the number of platform is 3}
 \end{figure}
 
@@ -379,7 +379,7 @@ to a maximum segment length threshold of 800 meters.
 
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_ranking.png}
+    \includegraphics[width=0.6\textwidth]{chapters/images/track_segmentation_initial_setup.png}
     \caption{Track segmentation Initial setup}
 \end{figure}
 
@@ -394,7 +394,7 @@ representation of the railway infrastructure.
 
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_ranking.png}
+    \includegraphics[width=0.6\textwidth]{chapters/images/track_segmentation_detection.png}
     \caption{Track segmentation applied to a conflicting segment}
 \end{figure}
 
@@ -404,7 +404,7 @@ was sufficient to eliminate all observed conflicts in the Belgian railway networ
 
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_ranking.png}
+    \includegraphics[width=0.6\textwidth]{chapters/images/track_segmentation_final.png}
     \caption{Track segmentation results}
 \end{figure}
 
@@ -419,11 +419,11 @@ to efficiently compute train routes through the network. The proposed approach a
 each railway track segment becomes a graph node, while the possible transitions between consecutive track segments are 
 represented as directed edges.
 
-\begin{figure}[h]
-    \centering
-    % \includegraphics[width=0.6\textwidth]{chapters/images/dual_graph_construction.png}
-    \caption{Dual graph construction from railway infrastructure}
-\end{figure}
+% \begin{figure}[h]
+%     \centering
+%     % \includegraphics[width=0.6\textwidth]{chapters/images/dual_graph_construction.png}
+%     \caption{Dual graph construction from railway infrastructure}
+% \end{figure}
 
 This representation considerably simplifies routing operations. Since trains always travel along track sections and move 
 from one section to another through switches or junctions, representing track segments as graph nodes naturally models 

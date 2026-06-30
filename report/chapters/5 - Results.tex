@@ -14,7 +14,7 @@ important because stations are central elements in both modeling approaches. In 
 main nodes of the graph. In the micro-level model, stations are used to associate platforms and tracks with operational 
 stopping points.
 
-\begin{table}[h]
+\begin{table}[H]
     \centering
     \begin{tabular}{lccc}
         \toprule
@@ -42,8 +42,7 @@ The second part of the dataset validation concerns platform and track coverage. 
 for the micro-level model, where the objective is to represent the railway infrastructure in more detail. Platforms define 
 where trains can stop inside stations, while tracks define the physical railway segments used for circulation.
 
-[Insert Table 5.2 here: Platform and track coverage]
-\begin{table}[h]
+\begin{table}[H]
     \centering
     \begin{tabular}{lccc}
         \toprule
@@ -91,8 +90,7 @@ The infrastructure modeling results confirm the high level of coverage already o
 Stations are almost completely detected in both modeling approaches, and platforms are also recovered with a high 
 success rate in the micro-level model.
 
-[Insert Table 5.3 here: Detected stations, platforms and switches]
-\begin{table}[h]
+\begin{table}[H]
     \centering
     \begin{tabular}{lccc}
         \toprule
@@ -101,7 +99,7 @@ success rate in the micro-level model.
         Stations (Macro-Level) & 1327 & 1337 & 99.85 \cr
         Stations (Micro-Level) & 553 & 554 & 99.82 \cr
         Platforms (Micro-Level) & 1551 & 1560 & 99.42 \cr
-        Switches (Micro-Level) & 1234 & 1250 & 98.72 \cr
+        Switches (Micro-Level) & 12343 & 10379 & 118.92 \cr
         \bottomrule
     \end{tabular}
     \caption{Detected stations, platforms and switches for macro-level and micro-level simulations}\label{tab:infrastructure_detection}
@@ -118,15 +116,15 @@ track coverage, this value above 100\% must be interpreted carefully. It does no
 correct switches than expected. Instead, it indicates that the algorithm identifies more candidate switch points than the 
 number of switches available in the reference dataset.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{figures/switch_detection.png}
+    \includegraphics[width=0.8\textwidth]{chapters/images/switch_detection_before.png}
     \caption{Network before and after switch detection}\label{fig:switch_detection_before}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{figures/switch_detection.png}
+    \includegraphics[width=0.8\textwidth]{chapters/images/switch_detection_after.png}
     \caption{Network before and after switch detection}\label{fig:switch_detection_after}
 \end{figure}
 
@@ -141,15 +139,15 @@ suitable for routing. In dense areas such as Bruxelles-Midi, the detected switch
 representation of the railway topology, but they also highlight the difficulty of matching generated topological elements 
 exactly with reference infrastructure objects.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{figures/platform_matching.png}
+    \includegraphics[width=0.8\textwidth]{chapters/images/platform_matching_result.png}
     \caption{Platform matching result on Bruxelles-Midi}\label{fig:platform_matching}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{figures/platform_matching_quality.png}
+    \includegraphics[width=0.8\textwidth]{chapters/images/platform_detection_quality.png}
     \caption{Platform matching quality map}\label{fig:platform_matching_quality}
 \end{figure}
 
