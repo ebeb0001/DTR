@@ -1,26 +1,201 @@
 \chapter{Proposed Methodology}\label{chap:methodology}
+This chapter presents the methodology proposed in this thesis to construct a simulation-oriented digital twin of a railway 
+network. The objective is to define and implement the foundational components required to transform heterogeneous railway 
+datasets into simulation-ready models. These components include infrastructure reconstruction, operational data 
+integration, trip generation, simulation execution, and result validation.
+
+The proposed methodology is structured around two complementary levels of representation. The first one is a macro-level 
+model, in which the railway network is represented as a station-to-station graph. This model provides a simplified but 
+scalable representation of the railway system and is mainly used to reconstruct and simulate train movements from real 
+operational data. The second one is a micro-level model, in which the railway infrastructure is represented in greater 
+detail through tracks, switches, platforms, and operational segments. This model aims to move closer to the physical 
+structure of the railway network and to evaluate whether more detailed train simulations can be generated from the 
+available data.
+
+This dual-level approach makes it possible to study the trade-off between simplicity and realism. The macro-level model is 
+easier to construct, more robust for route reconstruction, and better suited for validating the end-to-end workflow. 
+However, it cannot represent local infrastructure constraints inside stations. The micro-level model provides a richer 
+infrastructure description, but it also introduces additional challenges related to data completeness, platform 
+assignment, switch detection, route feasibility, and simulation complexity. By developing both approaches, the methodology 
+evaluates how different levels of abstraction influence the construction of a railway digital twin.
 
 \section{Positioning of This Work}
 
 
 
 \section{Framework}
+The proposed framework follows a data-driven pipeline that transforms raw railway datasets into SUMO-compatible simulation 
+artefacts. The general architecture can be divided into five main stages: data collection, data preprocessing, 
+infrastructure modeling, trip generation, and simulation-based evaluation. These stages are common to both the macro-level 
+and micro-level approaches, but their implementation differs according to the level of detail required by each model.
 
+The first stage consists of collecting the available railway data. Two main categories of data are considered: 
+infrastructure data and operational data. Infrastructure data describes the physical and topological structure of the 
+railway network, including stations, station-to-station connections, tracks, platforms, and switches. Operational data 
+describes train movements, timetables, arrival and departure times, and punctuality information. These datasets provide 
+the basis for constructing the virtual representation of the railway system.
+
+The second stage corresponds to data preprocessing. Since railway data is heterogeneous, it must be cleaned, standardized, 
+and transformed before it can be used for simulation. This includes harmonizing station identifiers, processing 
+geographical coordinates, filtering the data according to the selected simulation scope, and converting temporal 
+information into simulation-compatible time values. This step is essential because inconsistencies between infrastructure 
+and operational datasets can prevent route reconstruction or lead to invalid simulations.
+
+The third stage is infrastructure modeling. In the macro-level model, the infrastructure is represented as a graph in which 
+stations correspond to nodes and direct railway connections correspond to edges. This representation is suitable for 
+station-to-station simulation and for reconstructing train trajectories from punctuality data. In the micro-level model, 
+the infrastructure is reconstructed at a finer level of detail. Individual tracks are represented explicitly, switches 
+are detected from network topology, platforms are matched to nearby track segments, and the network is segmented when 
+necessary to improve the operational granularity of the model.
+
+The fourth stage is trip generation. In the macro-level model, train trips are reconstructed from real punctuality records. 
+Each train journey is obtained by grouping station records by train identifier and operating day, then sorting them 
+according to their planned times. The resulting station sequences are converted into SUMO routes. In the micro-level model, 
+two trip generation strategies are considered. The first one generates random trips constrained by the detected platforms 
+and network topology. The second one attempts to reconstruct real train journeys from operational data and map them onto 
+the detailed infrastructure.
+
+The final stage is simulation and evaluation. Once the network and routes have been generated, the scenario is executed in 
+SUMO.\@ The simulation produces output files describing train movements, stops, travel times, and summary statistics. These 
+outputs are then processed and compared with the available reference data. The evaluation focuses on dataset coverage, 
+infrastructure modeling quality, and the feasibility of the generated simulations. The framework therefore provides both a 
+technical implementation pipeline and an evaluation methodology for assessing the quality of the generated railway digital 
+twin.
 
 
 \section{Why SUMO?}
 
 
 
-\section{Data Availability}
+\section{Data Available}
+The proposed methodology relies on two main types of datasets: infrastructure data and operational data. Infrastructure 
+data is used to construct the virtual representation of the railway network, while operational data is used to generate 
+train movements and evaluate whether real railway activity can be reproduced in simulation. The use of both categories is 
+essential because a railway digital twin must represent not only the physical structure of the network, but also the way 
+trains actually operate on it.
+
+The data used in this thesis comes from Infrabel Open Data Portal And DTSC who has access to private data directly from 
+Infrabel. These datasets are not directly simulation-ready. They must be cleaned, aligned, transformed, and sometimes 
+approximated before they can be converted into SUMO artefacts. The available data also differs depending on the level of 
+representation. The macro-level model mainly uses stations and station-to-station connections, while the micro-level model 
+requires more detailed information about tracks, platforms, and switches.
+
 \subsection{Infrastructure Data}
+Infrastructure data corresponds to the static elements of the railway network. It includes information about stations, 
+connections between stations, railway track geometries, platform locations, and switch-like topological structures. In 
+this thesis, infrastructure data is used to generate the SUMO network on which train movements are simulated.
+
+The use of infrastructure data differs between the macro-level and micro-level approaches. The macro-level model only 
+requires stations and direct connections between them. It therefore focuses on the general connectivity of the railway 
+network. The micro-level model requires more detailed infrastructure elements and aims to represent the physical topology 
+of the railway network more closely.
+
 \subsubsection{Macro-Level Data}
+The macro-level infrastructure data represents the railway system as a graph. In this graph, stations are modeled as nodes 
+and direct railway connections between stations are modeled as edges. This abstraction does not include detailed elements 
+such as platforms, switches, signals, or internal station layouts. Instead, it focuses on preserving the overall topology 
+of the railway network.
+
+This level of data is particularly useful for reconstructing train movements from station sequences. Since the operational 
+data contains train passages through stations, the macro-level representation makes it possible to map these station 
+sequences directly onto a simulation network. The objective is therefore not to reproduce detailed infrastructure 
+conflicts, but to build a robust and scalable representation of railway circulation between stations.
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{XXXX}
+        \toprule
+        \textbf{Dataset} & \textbf{Example attributes} & \textbf{Reference value} & \textbf{Role} \cr
+        \toprule
+        Stations & Station identifier, station name, latitude, longitude & 559 stations
+         & Used to create SUMO nodes representing railway stations \cr
+        \midrule
+        Stations Connections & Origin station, destination station, distance, geometry & 1385 tracks 
+        & Used to create SUMO edges between neighbouring stations \cr
+        \midrule
+        Selected Simulated Area & List of selected stations or station chain & User-defined 
+        & Used to restrict the simulation to a coherent part of the network \cr
+        \bottomrule
+    \end{tabularx}
+    \caption{Macro-Level Infrastructure Data Overview}\label{tab:macro_level_data}
+\end{table}
+The macro-level data therefore provides the minimal infrastructure required to simulate trains from one station to another. 
+Its main advantage is that it reduces the complexity of the railway system while keeping the information needed to 
+reconstruct real train trajectories.
 
 \subsubsection{Micro-Level Data}
+The micro-level infrastructure data provides a more detailed representation of the railway network. It considers 
+physical railway elements such as track segments, platforms, and switches. This level of representation is required when 
+the objective is to simulate train circulation closer to the real infrastructure.
 
+Track data is used to generate the base railway graph. Each track segment contains geometric and topological information 
+that makes it possible to construct the SUMO network. Platform data is used to identify where trains can stop inside 
+stations. Since platforms must be associated with SUMO lanes, a matching step is required to link each platform to a 
+nearby track segment. Switches are not used only as isolated objects, but also as topological indicators that help 
+describe how track segments are connected.
+
+An example of the type of information used at the micro level is shown in Table~\ref{tab:micro_level_data}.
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{XXXX}
+        \toprule
+        \textbf{Dataset} & \textbf{Example attributes} & \textbf{Reference value} & \textbf{Role} \cr
+        \toprule
+        Tracks segments & Track identifier, geometry, start point, end point, length, geometry & 25068 tracks 
+        & Used to construct detailed SUMO railway edges \cr
+        \midrule
+        Platforms & Station name, platform number, associated area & 1560 platforms 
+        & Used to create train stops in the SUMO additional file \cr
+        \midrule
+        Switches & Node identifier, coordinates, connected track segments 
+        & 10379 switches 
+        & Used to represent branching points and support routing through the network \cr
+        \bottomrule
+    \end{tabularx}
+    \caption{Micro-Level Infrastructure Data Overview}\label{tab:micro_level_data}
+\end{table}
 
 \subsection{Operational Data}
+Operational data describes train movements across the railway network. In this thesis, this data is mainly used to 
+reconstruct train journeys and to generate simulation routes. Each record corresponds to the passage of a train at a 
+given station and contains temporal information related to the planned and observed operation of the service.
 
+The operational dataset is essential because it provides a connection between the static infrastructure and real railway 
+activity. Without operational data, the generated network would only represent the physical railway system, but it would 
+not contain realistic train movements. By using train identifiers, station identifiers, and planned times, it becomes 
+possible to reconstruct ordered sequences of stops for each train.
 
+An example of the type of information contained in the operational data is shown in Table~\ref{tab:operational_data}.
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{XXXXX}
+        \toprule
+        \textbf{Dataset} & \textbf{Main attribute groups} & \textbf{Example attributes} & \textbf{Reference value} & 
+        \textbf{Role} \cr
+        \toprule
+        Punctuality dataset & Train identification, station passage, timetable information, observed operation, 
+        delay information & Train identifier, operating date, station identifier, planned arrival time, planned departure 
+        time, observed arrival/departure time, arrival delay, departure delay 
+        & Depends on selected time window 
+        & Used to reconstruct real train journeys, generate simulation routes, and compare simulated operations 
+        with observed railway movements \cr
+        \bottomrule
+    \end{tabularx}
+    \caption{Operational Data Overview}\label{tab:operational_data}
+\end{table}
 
-\section{Implementation Plan}
+At the macro level, the operational data can be mapped relatively directly onto the station-to-station graph. For each 
+train and each operating day, the records are grouped and sorted chronologically to obtain a sequence of visited stations. 
+This sequence is then transformed into a SUMO route.
+
+At the micro level, the same operational data is more difficult to use because each station stop must be associated with 
+a specific platform or track segment. In addition, the route between two consecutive stations must be computed through the 
+detailed infrastructure graph. The operational data therefore remains the same in principle, but its integration becomes 
+more constrained when the level of infrastructure detail increases.
+
+Overall, the available data provides the foundation for constructing the proposed railway digital twin. Infrastructure data 
+defines the network to be simulated, while operational data defines the train movements to be reproduced. The distinction 
+between macro-level and micro-level data is central to the methodology, because it determines the type of simulation that 
+can be generated and the complexity of the preprocessing steps required before execution in SUMO.\@
+
+% \section{Implementation Plan}
