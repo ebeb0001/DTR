@@ -184,6 +184,69 @@ radius is larger or when the number of candidate tracks does not allow a clear c
 
 \section{Simulation Results}
 
+The previous sections evaluated the completeness of the generated datasets and the quality of the reconstructed 
+infrastructure. This section focuses on the simulation results obtained from the two implemented modeling approaches. 
+As in the implementation chapter, the results are separated between the macro-level and micro-level simulations because 
+the two models do not have the same objective or the same level of detail.
+
+The macro-level simulation is evaluated through a real-data scenario executed on a small chain of neighbouring stations. 
+The micro-level simulation is evaluated through a random-trip scenario executed on the reconstructed detailed network. 
+These two results illustrate the current simulation capabilities of the proposed framework and highlight the different 
+roles of the two levels of representation.
+
+\subsection{Macro-Level Simulation Results}
+The macro-level simulation was successfully executed on a selected chain of four neighbouring stations: Cour-sur-Heure, 
+Ham-sur-Heure, Berzée, and Pry. This scenario was chosen because it corresponds to a limited and coherent part of the 
+railway network, with moderate traffic intensity and a simple station-to-station structure.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.6\textwidth]{chapters/images/macro_simulation_result.png}
+    \caption{Macro-level simulation network for the selected four-station chain}\label{fig:macro_simulation_result}
+\end{figure}
+
+The simulation uses real operational data extracted from the punctuality dataset. Train movements are reconstructed from 
+the observed sequence of stations and converted into SUMO routes. This means that the simulated traffic is not randomly 
+generated: it corresponds to real train services that circulated through the selected part of the network during the 
+considered time window. The result therefore validates the ability of the macro-level pipeline to connect infrastructure 
+data, operational data, route generation, and SUMO simulation execution.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lccc}
+        \toprule
+        Element & Value \cr
+        \midrule
+        Simulated Area & Cour-sur-Heure, Ham-sur-Heure, Berzée, Pry \cr
+        Number of Stations & 4 \cr
+        Trip generation method & Real operational data \cr
+        Simulation duration & 5 days \cr
+        Number of generated train routes & [TODO] \cr
+        Number of complete simulated trips & [TODO] \cr
+        \bottomrule
+    \end{tabular}
+    \caption{Macro-level simulation scenario summary}\label{tab:macro_simulation_results}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.6\textwidth]{chapters/images/macro_simulation_result.png}
+    \caption{Time-space diagram of the macro-level simulation}\label{fig:macro_simulation_result}
+\end{figure}
+
+The main result of this scenario is that the macro-level approach is able to execute a simulation based on real train 
+movements, provided that the selected part of the network remains compatible with the assumptions of the model. In 
+particular, the approach works best on simple chains of neighbouring stations where each station has a limited local 
+complexity. Stations with two main directions are especially suitable because the simplified station-node representation 
+remains close to the actual operational structure. In contrast, dense stations with multiple platforms, branching 
+directions, and high traffic intensity are less appropriate for this abstraction because internal routing and platform 
+constraints are not represented.
+
+This result confirms the usefulness of the macro-level model as a first validation layer for the proposed DTR.\@ It 
+demonstrates that real operational data can be transformed into executable SUMO routes when the selected network area is 
+sufficiently simple and coherent. However, the result should not be interpreted as a complete validation of real railway 
+operations. The macro-level simulation validates station-to-station circulation, but it does not validate detailed 
+infrastructure behaviour inside stations.
 
 \section{Computational Performance}
 
