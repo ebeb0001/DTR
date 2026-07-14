@@ -248,6 +248,64 @@ sufficiently simple and coherent. However, the result should not be interpreted 
 operations. The macro-level simulation validates station-to-station circulation, but it does not validate detailed 
 infrastructure behaviour inside stations.
 
+\subsection{Micro-Level Simulation Results}
+The micro-level simulation was evaluated using randomly generated trips over the reconstructed detailed railway network. 
+Unlike the macro-level scenario, the current micro-level simulation does not yet use real operational trips. As 
+explained in Chapter~\ref{chap:implementation}. For this reason, the simulation result presented here focuses on the 
+random-trip scenario.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.6\textwidth]{chapters/images/micro_simulation_result.png}
+    \caption{SUMO-GUI screenshot of the micro-level random-trip simulation}\label{fig:micro_simulation_result}
+\end{figure}
+
+The random-trip simulation uses the detailed infrastructure generated during the micro-level modeling process. Tracks, 
+switches, platforms, and segmented railway sections are explicitly represented in the network. Synthetic trips are generated 
+between valid platform locations and are then routed through the SUMO network. Although these trips do not correspond to 
+real train services, they are constrained to start and end at plausible railway locations, which makes them useful for 
+validating the generated infrastructure.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lccc}
+        \toprule
+        Element & Value \cr
+        \midrule
+        Simulated Area & Entire reconstructed micro-level network \cr
+        Number of Stations & 553 \cr
+        Number of Platforms & 1551 \cr
+        Number of Tracks & 26721 \cr
+        Trip generation method & Random trips between valid platforms \cr
+        Simulation duration & [TODO] \cr
+        Number of generated train routes & [TODO] \cr
+        Number of successfully routed trips & [TODO] \cr
+        Number of completed trips & [TODO] \cr
+        \bottomrule
+    \end{tabular}
+    \caption{Micro-level simulation scenario summary}\label{tab:micro_simulation_results}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.6\textwidth]{chapters/images/micro_simulation_result.png}
+    \caption{Examples of routed random trips on the micro-level network}\label{fig:micro_simulation_result}  
+\end{figure}
+
+However, the interpretation of these results must remain limited. Random trips validate the technical feasibility of 
+executing traffic on the generated micro-level network, but they do not validate the reproduction of real railway 
+operations. Since the trips are synthetic, they do not preserve real timetables, train frequencies, service patterns, or 
+observed traffic distributions. The simulation should therefore be interpreted as an infrastructure and routing validation 
+scenario rather than as an operational validation scenario.
+
+Overall, the simulation results show that the two modeling approaches provide complementary forms of validation. 
+The macro-level model successfully supports real-data simulation on selected station chains, which demonstrates the 
+feasibility of integrating operational data into the digital twin pipeline. The micro-level model successfully supports 
+random-trip simulation on the detailed network, which demonstrates that the reconstructed infrastructure can be used by 
+SUMO for train circulation. At the current stage, real-data simulation is therefore more mature at the macro level, while 
+the micro-level model provides a stronger infrastructure foundation that still requires improvements before real 
+timetable-based simulation can be fully executed.
+
 \section{Computational Performance}
 
 
