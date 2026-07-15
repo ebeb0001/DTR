@@ -6,6 +6,7 @@ import datetime as dt
 import subprocess
 from copy import deepcopy
 import argparse
+from time import time
 
 mapping_stations : dict[int : list[int]] = {
 	1155 : [404, 736, 1149, 1189],
@@ -110,6 +111,14 @@ class RailwaySimulationGenerator :
 			"schedule" : f"{self.output_dir}/schedule.trips.xml",
 			"config" : f"{self.output_dir}/config.sumocfg",
 			"trains" : f"{self.output_dir}/trains.add.xml"
+		}
+		self.running_time = {
+			"data_loading" : 0.,
+			"network_generation" : 0.,
+			"trips_generation" : 0.,
+			"schedule_generation" : 0.,
+			"configuration_generation" : 0.,
+			"total" : 0.
 		}
 
 	def loadStations(self) :
@@ -454,13 +463,23 @@ class RailwaySimulationGenerator :
 		print("without gui : ", " ".join(sumo_command))
 
 	def generateSimulation(self) :
+		self.running_time["total"] = time()
+		start_time = time()
 		self.loadData()
 		self.filterData()
+		self.running_time["data_loading"] = time() - start_time
+		start_time = time()
 		self.writeNetworkFiles()
 		self.generateNetwork()
+		self.running_time["network_generation"] = time() - start_time
+		start_time = time()
 		self.generateTrips()
+		self.running_time["trips_generation"] = time() - start_time
+		start_time = time()
 		self.writeScheduleFiles()
 		self.writeConfigurationFile()
+		self.running_time["schedule_generation"] = time() - start_time
+		self.running_time["total"] = time() - self.running_time["total"]
 		self.startSimulation()
 
 if __name__ == "__main__" :
@@ -503,3 +522,6 @@ if __name__ == "__main__" :
 		spark=spark
 	)
 	generator.generateSimulation()
+	print("Running time (in seconds) for each step:")
+	for step, time_taken in generator.running_time.items():
+		print(f"  {step.replace('_', ' ').title()}: {time_taken:.4f} seconds")

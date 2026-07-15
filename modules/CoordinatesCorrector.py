@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import argparse
+from time import time
 
 class CoordinatesCorrector:
 	def __init__(self, input_station_file : str, input_station_to_station_file : str, 
@@ -185,4 +186,7 @@ if __name__ == "__main__" :
 		output_station_file=args.out_st,
 		output_station_to_station_file=args.out_st_to_st
 	)
+	start_time : float = time()
 	corrector.run()
+	end_time : float = time()
+	print(f"Total execution time: {end_time - start_time:.2f} seconds.")

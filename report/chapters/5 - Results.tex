@@ -14,7 +14,7 @@ important because stations are central elements in both modeling approaches. In 
 main nodes of the graph. In the micro-level model, stations are used to associate platforms and tracks with operational 
 stopping points.
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{lccc}
         \toprule
@@ -47,7 +47,7 @@ The second part of the dataset validation concerns platform and track coverage. 
 for the micro-level model, where the objective is to represent the railway infrastructure in more detail. Platforms define 
 where trains can stop inside stations, while tracks define the physical railway segments used for circulation.
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{lccc}
         \toprule
@@ -96,7 +96,7 @@ Stations are almost completely detected in both modeling approaches, and platfor
 rate in the micro-level model. Switches require a more nuanced interpretation, because they are inferred from the 
 generated railway topology rather than directly copied from the reference dataset.
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{lccc}
         \toprule
@@ -122,13 +122,7 @@ track coverage, this value above 100\% must be interpreted carefully. It does no
 correct switches than expected. Instead, it indicates that the algorithm identifies more candidate switch points than the 
 number of switches available in the reference dataset.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth]{chapters/images/switch_detection_before.png}
-    \caption{Network before and after switch detection.}\label{fig:switch_detection_before}
-\end{figure}
-
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.6\textwidth]{chapters/images/switch_detection_after.png}
     \caption{Network before and after switch detection (Green dots represent detected switches with 3 connections and 
@@ -148,7 +142,7 @@ suitable for routing. In dense areas such as Bruxelles-Midi, the detected switch
 representation of the railway topology, but they also highlight the difficulty of matching generated topological elements 
 exactly with reference infrastructure objects.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.6\textwidth]{chapters/images/platform_matching_result.png}
     \caption{Platform matching result on Bruxelles-Midi}\label{fig:platform_matching}
@@ -156,7 +150,7 @@ exactly with reference infrastructure objects.
 This station is particularly relevant because it contains a dense set of tracks and platforms, making it a useful example 
 for evaluating whether the platform matching algorithm can handle complex station environments.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_quality.png}
     \caption{Platform matching quality map}\label{fig:platform_matching_quality}
@@ -168,7 +162,7 @@ associated with the corresponding railway tracks and make it possible to visuall
 process. This qualitative validation complements the numerical coverage metrics and helps identify local cases where the 
 matching may be less accurate.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.6\textwidth]{chapters/images/platform_quality_example.png}
     \caption{Platform matching quality examples}\label{fig:platform_matching_examples}
@@ -199,9 +193,9 @@ The macro-level simulation was successfully executed on a selected chain of four
 Ham-sur-Heure, Berzée, and Pry. This scenario was chosen because it corresponds to a limited and coherent part of the 
 railway network, with moderate traffic intensity and a simple station-to-station structure.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
-    % \includegraphics[width=0.6\textwidth]{chapters/images/macro_simulation_result.png}
+    \includegraphics[width=0.6\textwidth]{chapters/images/macro_sim.png}
     \caption{Macro-level simulation network for the selected four-station chain}\label{fig:macro_simulation_result}
 \end{figure}
 
@@ -211,7 +205,7 @@ generated: it corresponds to real train services that circulated through the sel
 considered time window. The result therefore validates the ability of the macro-level pipeline to connect infrastructure 
 data, operational data, route generation, and SUMO simulation execution.
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{lccc}
         \toprule
@@ -221,18 +215,18 @@ data, operational data, route generation, and SUMO simulation execution.
         Number of Stations & 4 \cr
         Trip generation method & Real operational data \cr
         Simulation duration & 5 days \cr
-        Number of generated train routes & [TODO] \cr
-        Number of complete simulated trips & [TODO] \cr
+        Number of generated train routes & 49 \cr
+        Number of complete simulated trips & 49 \cr
         \bottomrule
     \end{tabular}
     \caption{Macro-level simulation scenario summary}\label{tab:macro_simulation_results}
 \end{table}
 
-\begin{figure}[H]
-    \centering
-    % \includegraphics[width=0.6\textwidth]{chapters/images/macro_simulation_result.png}
-    \caption{Time-space diagram of the macro-level simulation}\label{fig:macro_simulation_result}
-\end{figure}
+% \begin{figure}[h]
+%     \centering
+%     % \includegraphics[width=0.6\textwidth]{chapters/images/macro_simulation_result.png}
+%     \caption{Time-space diagram of the macro-level simulation}\label{fig:macro_simulation_result}
+% \end{figure}
 
 The main result of this scenario is that the macro-level approach is able to execute a simulation based on real train 
 movements, provided that the selected part of the network remains compatible with the assumptions of the model. In 
@@ -254,7 +248,7 @@ Unlike the macro-level scenario, the current micro-level simulation does not yet
 explained in Chapter~\ref{chap:implementation}. For this reason, the simulation result presented here focuses on the 
 random-trip scenario.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     % \includegraphics[width=0.6\textwidth]{chapters/images/micro_simulation_result.png}
     \caption{SUMO-GUI screenshot of the micro-level random-trip simulation}\label{fig:micro_simulation_result}
@@ -266,7 +260,7 @@ between valid platform locations and are then routed through the SUMO network. A
 real train services, they are constrained to start and end at plausible railway locations, which makes them useful for 
 validating the generated infrastructure.
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{lccc}
         \toprule
@@ -277,7 +271,7 @@ validating the generated infrastructure.
         Number of Platforms & 1551 \cr
         Number of Tracks & 26721 \cr
         Trip generation method & Random trips between valid platforms \cr
-        Simulation duration & [TODO] \cr
+        Simulation duration & 1 day \cr
         Number of generated train routes & [TODO] \cr
         Number of successfully routed trips & [TODO] \cr
         Number of completed trips & [TODO] \cr
@@ -286,11 +280,11 @@ validating the generated infrastructure.
     \caption{Micro-level simulation scenario summary}\label{tab:micro_simulation_results}
 \end{table}
 
-\begin{figure}[H]
-    \centering
-    % \includegraphics[width=0.6\textwidth]{chapters/images/micro_simulation_result.png}
-    \caption{Examples of routed random trips on the micro-level network}\label{fig:micro_simulation_result}  
-\end{figure}
+% \begin{figure}[h]
+%     \centering
+%     % \includegraphics[width=0.6\textwidth]{chapters/images/micro_simulation_result.png}
+%     \caption{Examples of routed random trips on the micro-level network}\label{fig:micro_simulation_result}  
+% \end{figure}
 
 However, the interpretation of these results must remain limited. Random trips validate the technical feasibility of 
 executing traffic on the generated micro-level network, but they do not validate the reproduction of real railway 
@@ -307,6 +301,82 @@ the micro-level model provides a stronger infrastructure foundation that still r
 timetable-based simulation can be fully executed.
 
 \section{Computational Performance}
+In addition to evaluating the quality of the generated railway infrastructure and the execution of simulation scenarios, 
+it is also important to analyse the computational performance of the proposed pipeline. This evaluation provides insight 
+into the cost of transforming the initial railway datasets into simulation-ready SUMO configuration files. It also helps 
+identify which steps of the implementation are the most time-consuming and where future optimizations should be 
+prioritized.
+
+The performance analysis is divided into two complementary parts. The first part focuses on the generation pipeline, from 
+the initial ETL operations to the creation of the network, route, stop, and configuration files required by SUMO.\@ The 
+second part focuses on the execution of the simulation itself, with particular attention to the micro-level model, which 
+contains a more detailed infrastructure representation and is therefore more computationally demanding.
+
+\subsection{Pipeline Generation Performance}
+The first evaluation concerns the execution time of the main processing steps required to generate a simulation scenario. 
+For both the macro-level and micro-level models, the pipeline can be decomposed into several stages: data loading and 
+preprocessing, infrastructure generation, route or trip generation, additional file generation, and final simulation 
+configuration.
+
+The micro-level pipeline is expected to require more processing time. This is mainly due to the larger 
+number of infrastructure elements and to the additional steps required to obtain a simulation-ready network. In particular, 
+switch detection, platform matching, and routing through the detailed track graph introduce additional computational 
+complexity. These steps are necessary to obtain a more realistic infrastructure representation, but they also make the 
+generation process more expensive.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lc}
+        \toprule
+        Pipeline Step & Execution Time (s) \cr
+        \midrule
+        ETL  & 330.92 \cr
+        Network generation & 0.12 \cr
+        Trip generation & 15.08 \cr
+        Additional file generation & 0.0058 \cr
+        Configuration generation & 0.0000 \cr
+        Total & 331.0458 \cr
+        \bottomrule
+    \end{tabular}
+    \caption{Execution time of the macro-level generation pipeline for the example network}\label{tab:pipeline_performance}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lc}
+        \toprule
+        Pipeline Step & Execution Time (s) \cr
+        \midrule
+        ETL & 344.09 \cr
+        Switch detection & 1.50 \cr
+        Platform Detection & 19.07 \cr
+        Track segementation & 81.90 \cr
+        Network generation & [TODO] \cr
+        Trip generation & [TODO] \cr
+        Additional file generation & [TODO] \cr
+        Configuration generation & [TODO] \cr
+        Total & [TODO] \cr
+        \bottomrule
+    \end{tabular}
+    \caption{Execution time of the micro-level generation pipeline with random trip generation}\label{tab:pipeline_performance}
+\end{table}
+
+% \begin{figure}[h]
+%     \centering
+%     % \includegraphics[width=0.6\textwidth]{chapters/images/pipeline_performance.png}
+%     \caption{Bar chart comparing macro-level and micro-level pipeline execution times}\label{fig:pipeline_performance}
+% \end{figure}
+
+Overall, this performance analysis provides a practical view of the scalability of the proposed framework. It shows 
+not only whether the pipeline can generate valid simulation scenarios, but also how expensive this generation is and 
+which components may become bottlenecks when the network size or simulation period increases.
+
+\subsection{Simulation Runtime Performance}
+The second part of the performance evaluation concerns the execution of the simulation in SUMO.\@ This analysis is 
+particularly relevant for the micro-level model, because it contains a much more detailed railway network than the 
+macro-level model. While the macro-level simulation is based on a simplified graph with stations and direct connections, 
+the micro-level simulation includes tracks, switches, platforms, and segmented railway sections.
+
 
 
 \section{Discussion}

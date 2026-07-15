@@ -1,4 +1,5 @@
 import pyspark.sql as sql
+from time import time
 
 class ETL :
 	def __init__(self, spark: sql.SparkSession, filename : str, separator : str, output_filename : str,
@@ -51,7 +52,10 @@ class ETL :
 
 	def run(self) -> None :
 		"""Run the entire ETL process."""
+		start_time = time()
 		self.extract()
 		self.transform()
 		self.load()
+		end_time = time()
 		print("ETL process completed successfully.")
+		print(f"Total execution time: {end_time - start_time:.2f} seconds.")

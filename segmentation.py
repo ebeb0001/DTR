@@ -5,6 +5,7 @@ import json
 from shapely.geometry import LineString
 from shapely.ops import transform
 from pyproj import Transformer
+from time import time
 
 
 # duplicate_tracks_id = {
@@ -101,7 +102,7 @@ def split_path_on_existing_points(path, max_length_m=300.0):
     return subpaths, oversized_edges
 
 
-
+start_time = time()
 # Charger ton CSV
 df = pd.read_csv("station_track_assigned.csv")
 
@@ -199,7 +200,9 @@ for _, row in main_tracks_df.iterrows():
 
 
 tracks_df = pd.DataFrame(tracks_rows)
+end_time = time()
+print(f"Total execution time: {end_time - start_time:.2f} seconds.")
 
-switches_df.to_csv("sumo_data/switches.csv", index=False, sep=";")
-tracks_df.to_csv("sumo_data/main_tracks.csv", index=False, sep=";")
+# switches_df.to_csv("sumo_data/switches.csv", index=False, sep=";")
+# tracks_df.to_csv("sumo_data/main_tracks.csv", index=False, sep=";")
 # print(set(result))
