@@ -215,11 +215,11 @@ data, operational data, route generation, and SUMO simulation execution.
         Number of Stations & 4 \cr
         Trip generation method & Real operational data \cr
         Simulation duration & 5 days \cr
-        Number of generated train routes & 49 \cr
-        Number of complete simulated trips & 49 \cr
+        Number of generated train routes & 115 \cr
+        Number of complete simulated trips & 115 \cr
         \bottomrule
     \end{tabular}
-    \caption{Macro-level simulation scenario summary}\label{tab:macro_simulation_results}
+    \caption{Macro-level simulation scenario summary}\label{tab:macro_simulation_scenario}
 \end{table}
 
 % \begin{figure}[h]
@@ -244,21 +244,21 @@ infrastructure behaviour inside stations.
 
 \subsection{Micro-Level Simulation Results}
 The micro-level simulation was evaluated using randomly generated trips over the reconstructed detailed railway network. 
-Unlike the macro-level scenario, the current micro-level simulation does not yet use real operational trips. As 
-explained in Chapter~\ref{chap:implementation}. For this reason, the simulation result presented here focuses on the 
-random-trip scenario.
+As explained in Chapter~\ref{chap:implementation}, the real-data micro-level scenario could not be fully executed because 
+the mapping of real train movements onto the detailed infrastructure graph did not provide valid paths for a sufficient 
+number of station pairs. For this reason, the result presented here focuses on the random-trip scenario.
+
+The random-trip simulation was executed on the entire reconstructed micro-level network. Trips were generated between 
+valid platform locations and then routed through the SUMO network. The objective of this scenario is therefore not to 
+reproduce a real timetable, but to evaluate whether the generated infrastructure can support train circulation at the 
+micro level.
 
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=0.6\textwidth]{chapters/images/micro_simulation_result.png}
-    \caption{SUMO-GUI screenshot of the micro-level random-trip simulation}\label{fig:micro_simulation_result}
+    \includegraphics[width=0.6\textwidth]{chapters/images/micro_sim.png}
+    \caption{SUMO-GUI screenshot of the micro-level random trip simulation}\label{fig:micro_simulation_result}
 \end{figure}
 
-The random-trip simulation uses the detailed infrastructure generated during the micro-level modeling process. Tracks, 
-switches, platforms, and segmented railway sections are explicitly represented in the network. Synthetic trips are generated 
-between valid platform locations and are then routed through the SUMO network. Although these trips do not correspond to 
-real train services, they are constrained to start and end at plausible railway locations, which makes them useful for 
-validating the generated infrastructure.
 
 \begin{table}[h]
     \centering
@@ -272,12 +272,12 @@ validating the generated infrastructure.
         Number of Tracks & 26721 \cr
         Trip generation method & Random trips between valid platforms \cr
         Simulation duration & 1 day \cr
-        Number of generated train routes & [TODO] \cr
-        Number of successfully routed trips & [TODO] \cr
-        Number of completed trips & [TODO] \cr
+        Number of generated train routes & 16802 \cr
+        Number of successfully routed trips & 16802 \cr
+        Number of completed trips & 4912 \cr
         \bottomrule
     \end{tabular}
-    \caption{Micro-level simulation scenario summary}\label{tab:micro_simulation_results}
+    \caption{Micro-level simulation scenario summary}\label{tab:micro_simulation_scenario}
 \end{table}
 
 % \begin{figure}[h]
@@ -286,19 +286,45 @@ validating the generated infrastructure.
 %     \caption{Examples of routed random trips on the micro-level network}\label{fig:micro_simulation_result}  
 % \end{figure}
 
-However, the interpretation of these results must remain limited. Random trips validate the technical feasibility of 
-executing traffic on the generated micro-level network, but they do not validate the reproduction of real railway 
-operations. Since the trips are synthetic, they do not preserve real timetables, train frequencies, service patterns, or 
-observed traffic distributions. The simulation should therefore be interpreted as an infrastructure and routing validation 
-scenario rather than as an operational validation scenario.
+The results show that 16802 train routes were generated and successfully routed. This is an important result because it 
+confirms that the generated infrastructure is not only a static representation of railway tracks, but can also be used by 
+SUMO to compute executable train movements. In this sense, the random-trip simulation validates the connectivity of the 
+generated network and demonstrates that the reconstructed micro-level infrastructure is usable for simulation purposes.
 
-Overall, the simulation results show that the two modeling approaches provide complementary forms of validation. 
-The macro-level model successfully supports real-data simulation on selected station chains, which demonstrates the 
-feasibility of integrating operational data into the digital twin pipeline. The micro-level model successfully supports 
-random-trip simulation on the detailed network, which demonstrates that the reconstructed infrastructure can be used by 
-SUMO for train circulation. At the current stage, real-data simulation is therefore more mature at the macro level, while 
-the micro-level model provides a stronger infrastructure foundation that still requires improvements before real 
-timetable-based simulation can be fully executed.
+However, the number of completed trips is significantly lower than the number of generated and routed trips. Out of 16802 
+generated routes, 4912 trips were completed during the simulation. This difference must be interpreted carefully. It does 
+not necessarily indicate that the generated network is disconnected, since the routes were successfully computed. Rather, 
+it reflects the limitations of random traffic generation when applied to a detailed railway network.
+
+Random trips are generated without reproducing the full set of operational constraints that would normally be considered 
+in a real railway timetable. In particular, the generation process does not fully account for train speeds, headways, 
+platform occupation, route conflicts, junction capacity, or the temporal separation between incompatible movements. As a 
+result, many trains may be inserted too close to one another or may attempt to use conflicting parts of the infrastructure 
+at similar times. During the simulation, this can lead to warnings such as emergency braking, collisions, teleportation 
+events, or blocked insertion areas.
+
+\begin{lstlisting}
+    Warning: Block after insertion lane '29646_0' exceeds maximum length
+    (stopped searching after edge ':2794_0' (length=20207.42m)).
+    Warning: Vehicle '12897' performs emergency braking on lane '49375_0'
+    with decel=5.00, wished=1.00, severity=1.00, time=85488.00.
+    Warning: Teleporting vehicle '12897'; collision with vehicle '10232',
+    lane='49527_0', gap=-40.28, time=85489.00, stage=move.
+\end{lstlisting}
+
+These warnings are therefore consistent with the nature of the generated scenario. They show that the infrastructure can 
+be used for routing, but that random trip generation does not provide a realistic operational timetable. The simulation 
+should consequently be interpreted as a technical validation of the generated network rather than as a realistic 
+reproduction of railway operations. It demonstrates that trains can circulate on the reconstructed micro-level 
+infrastructure, while also showing that a more constrained and timetable-aware trip generation method is required to 
+obtain operationally meaningful results.
+
+Overall, the micro-level simulation result confirms the feasibility of executing train movements on the detailed network. 
+The fact that all generated trips could be routed suggests that the network contains a high level of connectivity from the 
+point of view of SUMO routing. However, the lower number of completed trips highlights that routing feasibility alone is 
+not sufficient to produce realistic railway simulation. Future improvements should therefore focus not only on 
+infrastructure connectivity, but also on the generation of traffic scenarios that better account for railway operational 
+constraints.
 
 \section{Computational Performance}
 In addition to evaluating the quality of the generated railway infrastructure and the execution of simulation scenarios, 
@@ -318,11 +344,10 @@ For both the macro-level and micro-level models, the pipeline can be decomposed 
 preprocessing, infrastructure generation, route or trip generation, additional file generation, and final simulation 
 configuration.
 
-The micro-level pipeline is expected to require more processing time. This is mainly due to the larger 
-number of infrastructure elements and to the additional steps required to obtain a simulation-ready network. In particular, 
-switch detection, platform matching, and routing through the detailed track graph introduce additional computational 
-complexity. These steps are necessary to obtain a more realistic infrastructure representation, but they also make the 
-generation process more expensive.
+The longer execution time of the micro-level pipeline is therefore expected. It is mainly caused by the larger number of 
+infrastructure elements and by the additional processing stages required to construct a simulation-ready detailed network. In 
+particular, the micro-level pipeline includes switch detection, platform detection, track segmentation, detailed network 
+generation, and random trip generation. These operations are not required, or are much simpler, in the macro-level model.
 
 \begin{table}[h]
     \centering
@@ -338,7 +363,7 @@ generation process more expensive.
         Total & 331.0458 \cr
         \bottomrule
     \end{tabular}
-    \caption{Execution time of the macro-level generation pipeline for the example network}\label{tab:pipeline_performance}
+    \caption{Execution time of the macro-level generation pipeline for the example network}\label{tab:pipeline_performance_macro}
 \end{table}
 
 \begin{table}[h]
@@ -358,7 +383,7 @@ generation process more expensive.
         Total & 775.25 \cr
         \bottomrule
     \end{tabular}
-    \caption{Execution time of the micro-level generation pipeline with random trip generation}\label{tab:pipeline_performance}
+    \caption{Execution time of the micro-level generation pipeline with random trip generation}\label{tab:pipeline_performance_micro}
 \end{table}
 
 % \begin{figure}[h]
@@ -367,16 +392,91 @@ generation process more expensive.
 %     \caption{Bar chart comparing macro-level and micro-level pipeline execution times}\label{fig:pipeline_performance}
 % \end{figure}
 
-Overall, this performance analysis provides a practical view of the scalability of the proposed framework. It shows 
-not only whether the pipeline can generate valid simulation scenarios, but also how expensive this generation is and 
-which components may become bottlenecks when the network size or simulation period increases.
+The comparison between the macro-level and micro-level generation pipelines shows a clear difference in computational 
+cost. The macro-level pipeline completes in approximately 331 seconds, while the micro-level pipeline requires 
+approximately 775 seconds. This result is coherent with the structure of the two models. The macro-level model manipulates 
+a simplified station-to-station graph, whereas the micro-level model processes a much larger and more detailed 
+infrastructure representation.
 
-\subsection{Simulation Runtime Performance}
-The second part of the performance evaluation concerns the execution of the simulation in SUMO.\@ This analysis is 
-particularly relevant for the micro-level model, because it contains a much more detailed railway network than the 
-macro-level model. While the macro-level simulation is based on a simplified graph with stations and direct connections, 
-the micro-level simulation includes tracks, switches, platforms, and segmented railway sections.
+Among the micro-level processing steps, network generation and trip generation are particularly costly. This is consistent 
+with the fact that the micro-level network contains many more track segments and requires more complex route computation 
+than the macro-level model. Track segmentation also introduces a non-negligible cost, since it modifies the structure of 
+the infrastructure in order to increase the operational granularity of the network.
+
+This result highlights the trade-off between abstraction and realism. The macro-level model is faster and more robust for 
+real-data simulation on selected station chains, but it cannot represent detailed infrastructure constraints. The 
+micro-level model is more expensive to generate, but it provides a richer infrastructure representation that can support 
+more detailed simulations. The additional computational cost is therefore coherent with the higher level of detail 
+introduced by the micro-level approach.
+
+% \subsection{Simulation Runtime Performance}
+% The second part of the performance evaluation concerns the execution of the simulation in SUMO.\@ This analysis is 
+% particularly relevant for the micro-level model, because it contains a much more detailed railway network than the 
+% macro-level model. While the macro-level simulation is based on a simplified graph with stations and direct connections, 
+% the micro-level simulation includes tracks, switches, platforms, and segmented railway sections.
 
 
 
 \section{Discussion}
+The results presented in this chapter show that the proposed pipeline is able to generate and simulate railway networks 
+at two complementary levels of representation. The macro-level model provides a simplified but robust framework for 
+integrating real operational data into SUMO.\@ The micro-level model provides a more detailed representation of the physical 
+railway infrastructure and demonstrates that train circulation can be simulated on a network composed of tracks, switches, 
+platforms, and segmented railway sections.
+
+The dataset validation results indicate that the generated infrastructure is highly complete. Station coverage is almost 
+complete for both modeling levels, and platform coverage is also very high. Track coverage must be interpreted more 
+carefully, especially for the micro-level model, where the number of generated tracks exceeds the number of reference 
+tracks. This does not necessarily indicate an error. It reflects the fact that the generated SUMO network is a transformed 
+and more segmented representation of the original infrastructure data. The objective is not only to copy the reference 
+dataset, but to create a simulation-ready representation that can be used for routing and train movement simulation.
+
+The infrastructure modeling results also show the value of the micro-level approach. Switch detection and platform 
+matching make it possible to enrich the raw infrastructure data and transform it into operational simulation artefacts. 
+The platform matching quality examples show that the matching process can produce different levels of reliability 
+depending on the local configuration of the station. Some stations provide clear and accurate matches, while others 
+require larger search radii or present more ambiguous candidate tracks. This confirms that the method is effective 
+overall, but that local infrastructure complexity remains an important factor.
+
+The simulation results highlight the complementarity between the two modeling levels. At the macro level, real operational 
+data can be used directly on selected station chains, provided that the selected area remains compatible with the 
+simplifying assumptions of the model. This confirms the usefulness of the macro-level approach as a first end-to-end 
+validation of the digital twin workflow. It demonstrates that infrastructure data, punctuality data, route generation, 
+simulation execution, and output processing can be connected in a coherent pipeline.
+
+At the micro level, the results are different but equally informative. The random-trip simulation confirms that the 
+detailed network can be used by SUMO to route and execute train movements. The fact that 16802 trips were generated and 
+successfully routed suggests that the reconstructed infrastructure is connected from a routing perspective. However, only 
+4912 trips were completed during the simulation. This difference shows that network connectivity alone is not sufficient 
+to guarantee a realistic and stable railway simulation.
+
+The lower number of completed trips is mainly explained by the nature of random trip generation. Random trips are useful 
+for testing network connectivity and simulation feasibility, but they do not reproduce the constraints of a real timetable. 
+They do not fully account for train speeds, headways, route conflicts, junction capacity, platform occupation, or safe 
+temporal separation between trains. As a consequence, the simulation may generate operational conflicts, leading to 
+emergency braking, teleportation events, insertion problems, or collision-related warnings. These events should not be 
+interpreted as a failure of the infrastructure generation alone, but as evidence that random traffic generation is not 
+sufficient to reproduce realistic railway operations.
+
+The computational performance results further support the distinction between the two approaches. The macro-level pipeline 
+is faster because it manipulates fewer entities and relies on a simpler graph structure. The micro-level pipeline requires 
+more time because it processes a larger amount of data and performs additional operations such as switch detection, 
+platform matching, track segmentation, network generation, and route generation. This additional cost is coherent with the 
+increased realism of the model. It reflects a natural trade-off: the macro-level model is more scalable and easier to use 
+with real operational data, while the micro-level model provides a richer infrastructure basis but requires more processing 
+and more careful traffic generation.
+
+These findings also clarify the next challenge for the proposed digital twin. The micro-level network appears sufficiently 
+connected to support random routing, but the real-data routing strategy based on the dual graph did not yet provide 
+exploitable timetable-based simulation results. This suggests that the next difficulty is not only to generate a connected 
+network, but to identify the correct physical paths corresponding to real train movements. The dual graph approach provides 
+a useful methodological foundation, but future work may need to explore alternative routing strategies, improved direction 
+handling, better platform assignment, or precomputed station-to-station path libraries.
+
+Overall, the results show that the proposed framework successfully establishes the foundations of a railway digital twin 
+for simulation. The macro-level model validates the integration of real operational data in a simplified setting, while 
+the micro-level model validates the reconstruction and simulation of a detailed infrastructure network. The current implementation 
+does not yet provide a fully realistic micro-level timetable simulation, but it identifies the main technical obstacles 
+that must be addressed. In this sense, the contribution of the thesis is not limited to the final simulation outputs, it 
+also lies in the structured analysis of the trade-offs between abstraction, realism, computational cost, and operational 
+feasibility.
