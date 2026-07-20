@@ -1,8 +1,8 @@
 \chapter{Results}\label{chap:results}
 This chapter presents the results obtained from the modeling and simulation pipeline developed in this thesis. The 
 evaluation focuses on two main aspects. First, the generated datasets are compared with the available reference data in 
-order to assess their completeness. Second, the infrastructure elements extracted during the modeling process are analysed 
-to evaluate the quality of the generated railway representation.
+order to assess their completeness. Second, the infrastructure elements extracted during the modeling process are 
+analysed to evaluate the quality of the generated railway representation.
 
 The results are presented separately for the macro-level and micro-level approaches when necessary. This distinction is 
 important because the two models do not represent the railway network at the same level of detail. 
@@ -28,9 +28,9 @@ stopping points.
 \end{table}
 
 The results show that station coverage is very high for both modeling approaches. For the macro-level simulation, all 
-559 stations present in the reference dataset are generated, corresponding to a coverage of 100.00\%. This indicates that, 
-at the station-to-station level, the macro-level generation process is able to fully preserve the set of stations required 
-for the generated network.
+559 stations present in the reference dataset are generated, corresponding to a coverage of 100.00\%. This indicates 
+that, at the station-to-station level, the macro-level generation process is able to fully preserve the set of stations 
+required for the generated network.
 
 For the micro-level simulation, 553 stations are generated from a reference dataset containing 554 stations, corresponding 
 to a coverage of 99.82\%. This result is also very strong, especially considering that the micro-level model requires a 
@@ -44,8 +44,8 @@ almost complete despite the additional infrastructure constraints introduced by 
 
 \subsection{Platform and Track Coverage}
 The second part of the dataset validation concerns platform and track coverage. These elements are especially important 
-for the micro-level model, where the objective is to represent the railway infrastructure in more detail. Platforms define 
-where trains can stop inside stations, while tracks define the physical railway segments used for circulation.
+for the micro-level model, where the objective is to represent the railway infrastructure in more detail. Platforms 
+define where trains can stop inside stations, while tracks define the physical railway segments used for circulation.
 
 \begin{table}[h]
     \centering
@@ -65,9 +65,9 @@ where trains can stop inside stations, while tracks define the physical railway 
 
 The platform coverage obtained for the micro-level model is also very high. The reference dataset contains 1560 platforms, 
 while the generated dataset contains 1551 platforms, resulting in a coverage of 99.42\%. This shows that the platform 
-detection and matching process is able to identify almost all platforms available in the reference data. However, it does 
-not guarantee that the generated platforms are correctly positioned on the tracks, which is a separate aspect of the 
-infrastructure modeling process.
+detection and matching process is able to identify almost all platforms available in the reference data. However, it 
+does not guarantee that the generated platforms are correctly positioned on the tracks, which is a separate aspect of 
+the infrastructure modeling process.
 
 Track coverage differs between the macro-level and micro-level models. In the macro-level simulation, the reference data 
 contains 1385 station-to-station tracks and the generated dataset also contains 1385 tracks, giving a coverage of 100\%. 
@@ -87,8 +87,8 @@ adapted to routing and simulation constraints.
 
 \section{Infrastructure Modeling Results}
 After validating the general completeness of the datasets, the next step is to evaluate the results of the infrastructure 
-modeling process. This part focuses on the railway elements that were extracted, transformed, or reconstructed during the 
-implementation. The objective is to assess whether the generated infrastructure provides a coherent basis for railway 
+modeling process. This part focuses on the railway elements that were extracted, transformed, or reconstructed during 
+the implementation. The objective is to assess whether the generated infrastructure provides a coherent basis for railway 
 simulation.
 
 The infrastructure modeling results confirm the high level of coverage already observed in the dataset validation step. 
@@ -147,8 +147,8 @@ exactly with reference infrastructure objects.
     \includegraphics[width=0.6\textwidth]{chapters/images/platform_matching_result.png}
     \caption{Platform matching result on Bruxelles-Midi}\label{fig:platform_matching}
 \end{figure}
-This station is particularly relevant because it contains a dense set of tracks and platforms, making it a useful example 
-for evaluating whether the platform matching algorithm can handle complex station environments.
+This station is particularly relevant because it contains a dense set of tracks and platforms, making it a useful 
+example for evaluating whether the platform matching algorithm can handle complex station environments.
 
 \begin{figure}[h]
     \centering
@@ -157,8 +157,8 @@ for evaluating whether the platform matching algorithm can handle complex statio
 \end{figure}
 
 
-The platform matching figures further illustrate the quality of the generated infrastructure. They show how platforms are 
-associated with the corresponding railway tracks and make it possible to visually inspect the quality of the matching 
+The platform matching figures further illustrate the quality of the generated infrastructure. They show how platforms 
+are associated with the corresponding railway tracks and make it possible to visually inspect the quality of the matching 
 process. This qualitative validation complements the numerical coverage metrics and helps identify local cases where the 
 matching may be less accurate.
 
@@ -320,9 +320,9 @@ infrastructure, while also showing that a more constrained and timetable-aware t
 obtain operationally meaningful results.
 
 Overall, the micro-level simulation result confirms the feasibility of executing train movements on the detailed network. 
-The fact that all generated trips could be routed suggests that the network contains a high level of connectivity from the 
-point of view of SUMO routing. However, the lower number of completed trips highlights that routing feasibility alone is 
-not sufficient to produce realistic railway simulation. Future improvements should therefore focus not only on 
+The fact that all generated trips could be routed suggests that the network contains a high level of connectivity from 
+the point of view of SUMO routing. However, the lower number of completed trips highlights that routing feasibility alone 
+is not sufficient to produce realistic railway simulation. Future improvements should therefore focus not only on 
 infrastructure connectivity, but also on the generation of traffic scenarios that better account for railway operational 
 constraints.
 
@@ -420,9 +420,9 @@ introduced by the micro-level approach.
 \section{Discussion}
 The results presented in this chapter show that the proposed pipeline is able to generate and simulate railway networks 
 at two complementary levels of representation. The macro-level model provides a simplified but robust framework for 
-integrating real operational data into SUMO.\@ The micro-level model provides a more detailed representation of the physical 
-railway infrastructure and demonstrates that train circulation can be simulated on a network composed of tracks, switches, 
-platforms, and segmented railway sections.
+integrating real operational data into SUMO.\@ The micro-level model provides a more detailed representation of the 
+physical railway infrastructure and demonstrates that train circulation can be simulated on a network composed of tracks, 
+switches, platforms, and segmented railway sections.
 
 The dataset validation results indicate that the generated infrastructure is highly complete. Station coverage is almost 
 complete for both modeling levels, and platform coverage is also very high. Track coverage must be interpreted more 
@@ -463,8 +463,8 @@ is faster because it manipulates fewer entities and relies on a simpler graph st
 more time because it processes a larger amount of data and performs additional operations such as switch detection, 
 platform matching, track segmentation, network generation, and route generation. This additional cost is coherent with the 
 increased realism of the model. It reflects a natural trade-off: the macro-level model is more scalable and easier to use 
-with real operational data, while the micro-level model provides a richer infrastructure basis but requires more processing 
-and more careful traffic generation.
+with real operational data, while the micro-level model provides a richer infrastructure basis but requires more 
+processing and more careful traffic generation.
 
 These findings also clarify the next challenge for the proposed digital twin. The micro-level network appears sufficiently 
 connected to support random routing, but the real-data routing strategy based on the dual graph did not yet provide 
@@ -475,8 +475,8 @@ handling, better platform assignment, or precomputed station-to-station path lib
 
 Overall, the results show that the proposed framework successfully establishes the foundations of a railway digital twin 
 for simulation. The macro-level model validates the integration of real operational data in a simplified setting, while 
-the micro-level model validates the reconstruction and simulation of a detailed infrastructure network. The current implementation 
-does not yet provide a fully realistic micro-level timetable simulation, but it identifies the main technical obstacles 
-that must be addressed. In this sense, the contribution of the thesis is not limited to the final simulation outputs, it 
-also lies in the structured analysis of the trade-offs between abstraction, realism, computational cost, and operational 
-feasibility.
+the micro-level model validates the reconstruction and simulation of a detailed infrastructure network. The current 
+implementation does not yet provide a fully realistic micro-level timetable simulation, but it identifies the main 
+technical obstacles that must be addressed. In this sense, the contribution of the thesis is not limited to the final 
+simulation outputs, it also lies in the structured analysis of the trade-offs between abstraction, realism, computational 
+cost, and operational feasibility.
