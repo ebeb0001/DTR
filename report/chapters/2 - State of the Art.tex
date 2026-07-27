@@ -653,14 +653,14 @@ others are general-purpose or multimodal traffic simulation environments that ca
 \caption{Comparative analysis of railway and transport simulation tools}\label{tab:railway_simulators_comparison}
 \resizebox{\textwidth}{!}{
 \begin{tabular}{p{2.6cm} p{2.5cm} p{2.9cm} p{3.2cm} p{3.2cm} p{3.2cm}}
-\hline
+\toprule
 \textbf{Simulator} &
 \textbf{Type} &
 \textbf{Main focus} &
 \textbf{Main strengths} &
 \textbf{Main limitations} &
 \textbf{Relevance for this thesis} \\
-\hline
+\midrule
 
 \textbf{OpenTrack} &
 Microscopic railway simulator &
@@ -668,7 +668,7 @@ Railway operation, timetable evaluation, capacity and infrastructure analysis &
 Detailed railway-specific modelling; supports infrastructure, rolling stock, timetables and signalling constraints; provides train graphs, occupation diagrams and operational statistics &
 Requires detailed and well-structured railway data; less suited for fully custom open data pipelines; not primarily designed as an open experimental framework &
 Highly relevant as a reference railway simulator, but less suitable for the implemented data-driven and reproducible pipeline \\
-\hline
+\midrule
 
 \textbf{RailSys} &
 Professional railway planning and simulation suite &
@@ -676,7 +676,7 @@ Capacity analysis, timetable planning, travel time computation, headway analysis
 Strong railway-specific capabilities; designed for infrastructure managers and railway operators; supports detailed operational and capacity studies &
 Commercial/professional environment; limited openness for academic reproducibility; requires detailed infrastructure and operational input data &
 Relevant for comparison with professional railway tools, but less aligned with the objective of building an open and programmable prototype \\
-\hline
+\midrule
 
 \textbf{OSRD} &
 Open-source railway-specific platform &
@@ -684,7 +684,7 @@ Railway infrastructure design, capacity analysis, timetabling, simulation and sh
 Open-source; railway-oriented by design; supports infrastructure and timetable workflows; suitable for capacity and pathfinding studies &
 More oriented toward railway design and planning workflows; integration with a custom heterogeneous data-processing pipeline may require additional modelling effort &
 Relevant because it is open-source and railway-specific, but SUMO was preferred for its flexibility, scriptability and simulation workflow control \\
-\hline
+\midrule
 
 \textbf{SUMO} &
 Open-source microscopic traffic simulator &
@@ -692,7 +692,7 @@ Multimodal traffic simulation, route generation, demand modelling, public transp
 Open-source and highly scriptable; supports XML-based network generation, routing tools, outputs, TraCI interaction and large-scale automated workflows; includes railway-specific features such as rail edges, train stops and rail signals &
 Not originally designed as a railway-only simulator; detailed signalling, interlocking, dispatching and platform assignment require additional modelling effort &
 Selected as the main simulation platform because it enables full control over network generation, trip generation, execution and output processing \\
-\hline
+\midrule
 
 \textbf{AnyLogic / MATSim} &
 General-purpose or transport simulation platforms &
@@ -700,7 +700,7 @@ Agent-based simulation, multimodal mobility, large-scale transport demand modell
 Useful for multimodal and agent-based transport scenarios; suitable for studying passenger behaviour, demand patterns or large-scale mobility systems &
 Limited native support for detailed railway infrastructure constraints such as switches, interlocking, block occupation and platform-level operations &
 Useful as general transport simulation references, but less appropriate for the railway infrastructure reconstruction objectives of this thesis \\
-\hline
+\bottomrule
 
 \end{tabular}
 }
@@ -745,18 +745,203 @@ flexible simulation-oriented digital twin foundation, but it does not remove the
 
 % \subsection{Comparative Analysis}
 
-% \subsection{Limitations and Gaps in Current Simulators}
+\subsection{Limitations and Gaps in Current Simulators}
+Existing simulators provide important capabilities, but several limitations remain when the objective is to construct a 
+railway digital twin from heterogeneous real-world data. A first limitation concerns data integration. Many simulators 
+assume that the infrastructure and demand inputs are already available in a consistent and simulator-compatible format. In 
+practice, railway data often comes from multiple sources, with different identifiers, geometries, levels of detail, and 
+temporal resolutions. Transforming these datasets into valid simulation inputs remains a major challenge.
+
+A second limitation concerns the balance between realism and scalability. Detailed railway simulators can represent 
+signalling, switches, platforms, and operational conflicts, but this usually requires high-quality infrastructure data and 
+careful configuration. Simpler models are easier to generate and scale, but they omit important operational constraints. 
+This creates a trade-off between macroscopic representations, which are easier to use with large datasets, and microscopic 
+representations, which are more realistic but more fragile.
+
+A third limitation concerns reproducibility and openness. Some railway simulation tools are commercial or require 
+proprietary workflows. This can be appropriate for industrial applications, but it may limit reproducibility in academic 
+research. Open-source tools such as SUMO and OSRD reduce this barrier, but they still require significant preprocessing 
+and modelling work before real railway data can be used.
+
+A final limitation concerns the connection between simulation and operational data. Many simulation studies focus either 
+on infrastructure modelling or on timetable evaluation, but fewer provide an end-to-end workflow that starts from raw 
+infrastructure and punctuality data, generates a simulation-ready railway network, executes train movements, and compares 
+simulation outputs with real observations. This gap directly motivates the work presented in this thesis.
 
 \subsection{SUMO\@: General Features}
+SUMO is an open-source traffic simulation suite designed to model large-scale transport systems. It is microscopic, meaning 
+that each vehicle is represented individually, and continuous, meaning that vehicle movements evolve over simulation time 
+rather than being represented only as discrete events. SUMO supports different transport modes, including cars, buses, 
+pedestrians, bicycles, public transport, and rail vehicles~\cite{sumo2018,sumo_docs}.
+
+A SUMO simulation is built from several types of input files. The network file describes the topology of the simulated 
+environment, including nodes, edges, lanes, connections, and permissions. Route files define vehicles, vehicle types, 
+departure times, and paths. Additional files may define stops, detectors, traffic lights, calibrators, public transport 
+stops, rerouting rules, or other simulation objects. A configuration file then specifies which inputs must be loaded and 
+which outputs should be generated.
+
+SUMO provides several tools for scenario creation and manipulation. The \texttt{netconvert} tool converts network 
+descriptions into SUMO network files. It can import networks from multiple formats, including OpenStreetMap and manually 
+defined XML files. The \texttt{duarouter} tool computes routes from trips or origin-destination information. The 
+\texttt{randomTrips.py} script can generate synthetic travel demand. The \texttt{netedit} tool provides a graphical 
+interface for editing networks. These tools make SUMO particularly suitable for building simulation scenarios through 
+automated pipelines.
+
+SUMO also provides a rich set of outputs. Depending on the configuration, it can generate information about completed 
+trips, stops, vehicle trajectories, edge-based statistics, lane-based statistics, emissions, delays, and simulation 
+summaries. These outputs are useful because they can be transformed into structured datasets and compared with real 
+observations. In this thesis, outputs such as trip information, stop information, and summary statistics are particularly 
+important because they allow simulated train movements to be evaluated against operational data.
+
+Another important feature is \texttt{TraCI}, the Traffic Control Interface. TraCI allows external programs, typically 
+written in Python, to interact with a running SUMO simulation. Through TraCI, it is possible to retrieve the state of the 
+simulation, control vehicles, modify traffic lights, reroute vehicles, or implement custom control logic. This is 
+especially relevant for digital twin applications because it provides a mechanism through which simulation can become 
+interactive rather than purely offline.
 
 \subsection{SUMO Backend Architecture}
+SUMO can be understood as a modular simulation ecosystem. Its architecture is organized around a set of command-line 
+applications, input/output formats, libraries, and interfaces that together support the complete simulation workflow.
+
+At the core of the system is the simulation engine, executed through \texttt{sumo} or \texttt{sumo-gui}. The command-line 
+version is used for automated or large-scale experiments, while the graphical version provides visualization and debugging 
+capabilities. Both versions rely on the same simulation principles and load the same core input files. This separation 
+between simulation execution and graphical visualization is useful because it allows scenarios to be developed visually 
+and then executed automatically in scripts.
+
+Network generation is handled by dedicated tools such as \texttt{netconvert} and \texttt{netgenerate}. In the context of 
+this thesis, \texttt{netconvert} is especially important because it transforms node and edge definitions into a complete 
+SUMO network. This step includes the construction of lanes, connections, permissions, and network topology. For railway 
+simulation, this conversion step is critical because routing feasibility depends on the correctness of the generated 
+topology.
+
+Demand generation and routing are handled by tools such as \texttt{randomTrips.py} and \texttt{duarouter}. 
+\texttt{randomTrips.py} can generate synthetic trips according to user-defined parameters, while duarouter computes valid 
+paths over the network. In railway scenarios, these tools can be used to generate artificial train movements or to convert 
+reconstructed operational trips into executable routes.
+
+SUMO also includes Python libraries such as \texttt{sumolib}, which allows SUMO networks and XML files to be inspected 
+and manipulated programmatically. This is important for research workflows because it makes it possible to build custom 
+preprocessing, validation, and post-processing scripts. Together with \texttt{TraCI}, these libraries provide a bridge 
+between SUMO and external data-processing environments.
+
+The backend architecture is therefore particularly suitable for the methodology of this thesis. The proposed pipeline 
+relies on Python and Apache Spark for data processing, generates XML files compatible with SUMO, uses SUMO tools for 
+network conversion and routing, and then parses simulation outputs for analysis. This modular workflow allows each step 
+to be inspected, replaced, or improved independently.
 
 \subsection{SUMO For Railway Simulation}
+Although SUMO was initially developed for urban mobility simulation, it includes specific functionalities for railway 
+simulation. Railway networks can be imported from supported formats or built manually by defining edges with railway 
+permissions. When importing railway data from \texttt{OpenStreetMap}, railway edges can be configured with appropriate 
+vehicle classes such as rail. When building networks from scratch, railway behaviour can be obtained by assigning the 
+$allow=``rail``$ attribute to the corresponding edges~\cite{sumo_railways}.
 
+Railway simulation in SUMO differs from road simulation in several important ways. First, railway tracks should usually be 
+represented as distinct edge elements, especially when parallel tracks exist. Unlike road lanes, which may represent 
+parallel lanes of the same road segment, parallel railway tracks often have separate operational roles and routing 
+possibilities. SUMO documentation therefore recommends representing parallel tracks as distinct edges rather than as 
+multiple lanes of a single edge~\cite{sumo_railways}.
+
+Second, railway directionality must be handled explicitly. In real railway systems, tracks may physically support traffic 
+in both directions, but operational practice often assigns preferred directions. In SUMO, bidirectional railway usage is 
+represented by two opposite edges with reversed geometries. This makes directionality explicit in the network topology and 
+allows routing preferences or restrictions to be defined. This point is important for micro-level railway modelling 
+because missing or incorrect directionality may prevent valid train routes from being found.
+
+Third, trains can be associated with stops. In SUMO, railway stops can be represented using \texttt{trainStop} elements. A 
+train route may include scheduled stops with attributes such as duration or until time. This is essential for representing 
+passenger railway operations because trains do not simply travel from origin to destination, they stop at intermediate 
+stations according to a timetable.
+
+Fourth, SUMO provides rail signal functionalities. Rail signals can regulate access to railway blocks, support schedule 
+constraints, and prevent certain deadlock situations. The documentation also describes moving-block behaviour and schedule 
+constraints that can enforce train ordering at signals. These mechanisms show that SUMO includes railway-specific control 
+features, although their effective use requires the input network, signals, routes, and schedules to be modelled 
+correctly~\cite{sumo_railways}.
+
+Lastly, SUMO provides railway-specific tools and outputs. For example, rail simulation can generate outputs related to 
+signalling blocks and driveway occupation. Tools such as \texttt{checkStopOrder.py}, \texttt{scheduleStats.py}, and 
+\texttt{checkReversals.py} can be used to analyse railway schedules, compare simulated train behaviour with schedule 
+expectations, and detect problematic train routes. These tools are relevant for validating railway scenarios and 
+identifying issues in route generation.
+
+Despite these features, SUMO railway simulation has limitations. It does not automatically reconstruct railway 
+infrastructure from raw operational data. It also does not automatically infer complete platform assignments, switch 
+logic, or signalling constraints from incomplete datasets. Therefore, the quality of a SUMO railway simulation depends 
+strongly on the preprocessing pipeline used to generate the network, stops, routes, and additional files. This is 
+precisely where the contribution of this thesis is located. The work investigates how Belgian railway infrastructure and 
+punctuality data can be transformed into SUMO-compatible macro-level and micro-level railway simulations.
 
 
 \section{Simulation Calibration}
+Simulation calibration is the process of adjusting model parameters so that simulation outputs reproduce observed 
+real-world behaviour as closely as possible. In transport simulation, calibration is necessary because a simulator is 
+never a perfect copy of reality. It relies on assumptions, parameters, simplifications, and incomplete data. Without 
+calibration, the simulation may run correctly from a technical perspective but still produce unrealistic travel times, 
+flows, delays, or capacity usage.
 
+In microscopic traffic simulation, calibration often concerns parameters related to vehicle behaviour, such as 
+acceleration, deceleration, reaction time, car-following parameters, lane-changing behaviour, route choice, and departure 
+distributions. In railway simulation, calibration may concern different elements: running times, dwell times, train 
+acceleration and braking behaviour, platform stopping times, route choices, dispatching rules, delay distributions, and 
+capacity constraints.
+
+Several calibration approaches exist. Manual calibration consists of adjusting parameters based on expert knowledge and 
+comparing simulation outputs with reference data. This approach is simple but can be subjective and difficult to scale. 
+Optimization-based calibration defines an objective function that measures the difference between simulated and observed 
+data, then searches for parameter values that minimize this difference. Metaheuristic methods, such as genetic algorithms, 
+simulated annealing, or tabu search, can be used when the parameter space is complex. Data-driven calibration methods use 
+statistical or machine learning techniques to estimate model parameters from observed data.
+
+A calibration process usually requires three elements. First, reference data must be available. In railway applications, 
+this may include planned and observed arrival times, departure times, dwell times, delays, platform usage, or track 
+occupation data. Second, comparable simulation outputs must be produced. Third, evaluation metrics must be defined. These 
+metrics may include mean absolute error, root mean square error, delay distribution similarity, travel time error, 
+punctuality indicators, or the difference between observed and simulated traffic volumes.
+
+SUMO includes calibration-related mechanisms, especially for road traffic. For example, calibrators can insert or remove 
+vehicles to match observed flow and speed values over specific time intervals~\cite{sumo_calibrator}. More generally, SUMO 
+can be integrated into external calibration workflows because simulations can be launched automatically, parameters can be 
+modified through scripts, and outputs can be analysed programmatically. This makes it possible to build iterative 
+calibration loops around the simulator.
+
+In this thesis, calibration is not the main focus. The objective is not to tune the simulator until it reproduces railway 
+traffic perfectly, but rather to construct a simulation-ready railway model and evaluate whether real railway data can be 
+transformed into feasible SUMO scenarios. Nevertheless, calibration remains relevant for future work. Once the 
+infrastructure and routing problems are solved, calibration could be used to adjust dwell times, running times, departure 
+distributions, and delay behaviour so that the simulated railway system better matches historical punctuality data.
 
 
 \section{Research Gaps}
+The literature and existing tools show that railway simulation and digital twin technologies are both mature enough to 
+support advanced applications, but several gaps remain when the objective is to build a data-driven railway digital twin 
+simulation from heterogeneous real-world data.
+
+The first gap concerns the transformation of heterogeneous railway data into simulation-ready models. Existing simulators 
+often assume that infrastructure, timetable, and operational data are already available in compatible formats. However, 
+real railway datasets are rarely directly usable. Infrastructure data may describe tracks, stations, platforms, and 
+switches, while operational data may describe train movements only at the station level. These datasets must be cleaned, 
+aligned, transformed, and validated before they can be used in simulation. This preprocessing step is often underestimated, 
+even though it determines whether the simulation can run at all.
+
+The second gap concerns the comparison between different levels of railway representation. A macro-level representation is 
+easier to generate and can support large-scale station-to-station simulations, but it ignores detailed infrastructure 
+constraints. A micro-level representation is more realistic because it explicitly represents tracks, switches, platforms, 
+and routing constraints, but it is also more sensitive to data quality and topological inconsistencies. Existing works 
+often focus on one level of abstraction, whereas this thesis explicitly studies both and analyses the trade-off between 
+simplicity, scalability, realism, and feasibility.
+
+The third gap concerns the integration of real operational data into railway simulation. Synthetic trips are useful for 
+testing infrastructure connectivity, but they do not reproduce the actual structure of railway operations. Real 
+punctuality data provides a more realistic basis for simulation, but it does not directly contain the complete physical 
+route followed by each train. As a result, a route reconstruction process is required. This problem becomes particularly 
+difficult at the micro level, where each station-to-station movement must be mapped onto a valid sequence of track 
+segments and platform stops.
+
+This thesis addresses these gaps by proposing and evaluating a data-driven pipeline for constructing SUMO-based railway 
+simulations at two levels of abstraction. The macro-level model represents stations and station-to-station connections, 
+allowing real train trajectories to be reconstructed more easily from operational data. The micro-level model represents 
+tracks, switches, platforms, and routing structures, making it possible to study the challenges of detailed railway 
+simulation. By comparing these two approaches, the work contributes to understanding the practical requirements, 
+limitations, and trade-offs involved in building simulation-oriented railway digital twins.
