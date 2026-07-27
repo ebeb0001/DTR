@@ -143,7 +143,7 @@ scenarios, such as modified timetables, temporary track closures, traffic disrup
 
 % \begin{figure}[h]
 %     \centering
-%     % \includegraphics[width=0.8\textwidth]{figures/railway_digital_twin_architecture.png}
+%     % \includegraphics[width=0.6\textwidth]{figures/railway_digital_twin_architecture.png}
 %     \caption{Example of a railway digital twin architecture.}\label{fig:railway_digital_twin_architecture}
 %     % Example of a railway digital twin architecture, showing infrastructure data, operational data, simulation model, 
 %     % analytics layer, and decision-support services.
@@ -187,45 +187,565 @@ the model. The work presented in this thesis focuses on these foundational steps
 ground for future digital twin applications such as real-time forecasting, disruption analysis, and decision support.
 
 \section{Railway Systems}
+Railway systems are complex socio-technical systems composed of physical infrastructure, rolling stock, operational rules, 
+control systems, and data-driven decision processes. Unlike road traffic, where vehicles usually have a high degree of 
+freedom in their trajectories, trains are constrained to follow predefined tracks, respect signalling rules, and operate 
+according to planned timetables. This makes railway systems highly structured, but also highly constrained.
+
+Understanding railway systems is essential for the construction of a railway digital twin. A digital twin does not 
+only require a geometric or topological description of the network, it must also account for how trains move, how 
+infrastructure is used, how conflicts are avoided, and how delays propagate.
+
 \subsection{Railway infrastructure}
+Railway infrastructure refers to the physical and technical components that allow trains to circulate safely and 
+efficiently. It includes tracks, switches, junctions, stations, platforms, signalling systems, electrification equipment, 
+and communication systems. From a modelling perspective, infrastructure defines the spatial structure of the network and 
+the constraints under which train movements can occur.
+
+In railway simulation, the level of detail used to represent infrastructure depends on the objective of the model. A 
+high-level model may only represent stations and the connections between them, which is sufficient for analysing 
+large-scale connectivity or approximate train movements. A more detailed model must represent tracks, switches, platforms, 
+signals, and route conflicts, which is necessary for studying station-level operations, capacity, and realistic routing 
+constraints.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/railway_infra.png}
+    \caption{Schematic representation of railway infrastructure components.}\label{fig:railway_infrastructure}
+\end{figure}
+
 \subsubsection{Tracks}
+Tracks are the fundamental physical component of a railway network. They guide the movement of trains and define the 
+possible spatial paths through the infrastructure. A railway track generally consists of rails, sleepers, ballast or slab 
+track, and the supporting formation. From an operational point of view, a track is not only a physical object but also a 
+capacity resource: only a limited number of trains can use the same section of track within a given time interval.
+
+In modelling terms, tracks can be represented at different levels of abstraction. At a macroscopic level, a track may 
+be abstracted as a connection between two stations. This representation is useful when the objective is to model 
+station-to-station connectivity or analyse large-scale train movements. At a microscopic level, however, tracks must be 
+represented as individual segments with geometry, direction, length, speed constraints, and connections to neighbouring 
+track elements. This level of detail is required when the objective is to compute feasible routes through complex station 
+areas or to represent switches and platform access.
+
+Track directionality is also important. Some railway lines are designed for traffic in one direction only, while others 
+allow bidirectional operation. Even when tracks are physically bidirectional, signalling and operational rules may 
+restrict their use. In simulation, this distinction affects route generation because a path that is geometrically 
+possible may not be operationally valid. Therefore, a railway model must distinguish between physical connectivity and 
+usable operational connectivity.
+
+Another important aspect is the distinction between plain line tracks and station or yard tracks. Plain line tracks 
+connect railway nodes over longer distances and are usually associated with running movements. Station tracks, sidings, 
+and yard tracks are often used for stopping, overtaking, shunting, or storing rolling stock. Their operational behaviour 
+differs from mainline tracks and may require additional modelling assumptions.
+
+For this thesis, the concept of track is central in the micro-level model. Individual track segments form the basis of 
+the reconstructed infrastructure graph. Their connections determine whether a train path can be computed between two 
+stations or platforms. In contrast, the macro-level model abstracts tracks into station-to-station links, which reduces 
+complexity but omits detailed infrastructure constraints.
+
 
 \subsubsection{Switches and Junctions}
+Switches, also called points or turnouts, are infrastructure elements that allow trains to move from one track to another. 
+They are essential for routing because they introduce branching possibilities in the network. Without switches, a railway 
+network would be a set of independent lines with limited operational flexibility. Switches enable trains to enter stations, 
+change tracks, access sidings, overtake other trains, or follow alternative routes.
+
+A switch is usually composed of movable rails that guide the wheels of a train toward one of several possible paths. From 
+a modelling perspective, a switch can be understood as a local decision point in the infrastructure graph. It connects an 
+incoming track to two or more outgoing tracks, depending on its configuration. Junctions are larger structures composed of 
+several switches and crossings, often located near stations, yards, or intersections between railway lines.
+
+[Figure 2.4 should be inserted here: Example of a railway switch/turnout showing the straight route and diverging route.]
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/railway_switch.jpg}
+    \caption{Example of a railway switch/turnout showing the straight route and diverging route.}\label{fig:railway_switch}
+\end{figure}
+
+Switches introduce important operational constraints. A train can only pass through a switch if it is correctly aligned 
+for the intended route. Furthermore, two trains cannot use conflicting routes through the same junction at the same time. 
+These constraints are usually enforced by signalling and interlocking systems. In detailed railway simulations, switches 
+and junctions must therefore be modelled not only as graph connections, but also as shared resources that may generate 
+conflicts.
+
+The correct identification of switches is particularly important for digital twin construction. If switches are missing 
+from the infrastructure model, some valid routes may not be found. Conversely, if false switches are detected, the model 
+may allow unrealistic routes. This is one of the reasons why micro-level railway modelling is more challenging than 
+macro-level modelling. It requires detecting and representing the internal structure of the network with sufficient 
+accuracy.
+
+In this thesis, switches play an important role in the micro-level infrastructure model. They are detected from the 
+topology of the railway network and converted into simulation-compatible nodes. This allows the generated network to 
+represent routing possibilities at a finer level than the macro-level model.
+
 
 \subsubsection{Stations and Platforms}
+Stations are operational nodes where trains may stop, passengers may board or alight, and services may be regulated. They 
+are often among the most complex elements of a railway network because they combine infrastructure, passenger flows, 
+operational constraints, and timetable requirements. A station may contain several tracks, multiple platforms, switches, 
+signals, and access routes.
+
+In a macroscopic representation, a station can be modelled as a single node. This is useful when the objective is to 
+analyse connections between stations or reconstruct train journeys from operational data. However, such a representation 
+hides the internal structure of the station. It does not indicate which platform a train uses, whether two trains can 
+stop simultaneously, or whether the access routes to different platforms conflict.
+
+In a microscopic representation, a station must be decomposed into tracks, platforms, stopping positions, and access 
+routes. Platforms define where passenger exchanges occur. They are important for simulation because a train stop must be 
+attached to a specific track or lane in the simulation network. If a platform is incorrectly associated with a track, the 
+simulated train may stop at the wrong location or may not be able to reach the stop at all.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/railway_station.jpg}
+    \caption{Example of a station layout}\label{fig:railway_station_layout}
+\end{figure}
+
+Stations also influence capacity. Dwell time, platform availability, route conflicts at station throats, and the number of 
+available tracks determine how many trains can be handled within a given period. Large stations may become bottlenecks 
+even if the lines around them have sufficient capacity. For this reason, station modelling is a key component of realistic 
+railway simulation.
+
+In this thesis, stations are used differently in the macro-level and micro-level approaches. In the macro-level model, 
+stations are represented as nodes connected by edges. In the micro-level model, stations are associated with platforms and 
+track segments. This distinction makes it possible to compare a simplified connectivity-based representation with a more 
+detailed infrastructure-based representation.
 
 \subsubsection{Signaling Systems}
+Signalling systems are used to ensure the safe movement of trains through the railway network. Their main role is to 
+prevent conflicting train movements and to maintain safe separation between trains. Signalling systems communicate 
+movement authorities, speed restrictions, route availability, and stopping instructions to train drivers or onboard 
+systems.
 
+Traditional signalling systems divide the railway line into block sections. Under normal operation, only one train is 
+allowed to occupy a block section at a time. A train may proceed only if the section ahead is clear and if the route has 
+been correctly set. This principle prevents rear-end collisions and conflicting movements. In more advanced systems, 
+movement authority may be transmitted directly to the train through cab signalling or automatic train protection systems.
+
+In Europe, signalling and train control are strongly influenced by interoperability requirements. The European Rail 
+Traffic Management System (ERTMS) and the European Train Control System (ETCS) aim to standardize train control and 
+signalling across countries. Such systems are relevant for digital twin research because they generate and rely on 
+structured operational data and because they influence how train movements can be represented.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/railway_signalling.png}
+    \caption{Simplified block signalling principle}\label{fig:railway_signalling}
+\end{figure}
+
+From a simulation perspective, signalling can be represented at different levels of detail. A simple simulation may ignore 
+signalling and only check whether routes exist. A more realistic simulation must represent block occupation, signal states, 
+route reservations, interlocking constraints, and train separation. The level of signalling detail has a direct impact on 
+the realism of simulated train movements and capacity analysis.
+
+In this thesis, signalling is not fully modelled as an operational control system. However, it remains an important 
+limitation and a key concept for interpreting the realism of the generated simulations. The absence or simplification 
+of signalling means that the simulation can validate connectivity and route generation, but cannot fully reproduce all 
+safety-critical operational constraints of a real railway network.
 
 \subsection{Railway Operations}
+Railway operations describe how trains are planned, dispatched, controlled, and managed over the infrastructure. While 
+infrastructure defines what is physically possible, operations define what is actually allowed and scheduled. Railway 
+operations combine timetables, train paths, rolling stock constraints, crew constraints, safety rules, capacity management, 
+and real-time traffic regulation.
+
+For a railway digital twin, operations are essential because the objective is not only to represent the network, but also 
+to reproduce or analyse train movements. Operational data provides information about scheduled and actual train movements, 
+delays, stops, and service patterns. This data can be used to generate simulation scenarios, validate the model, and study 
+the behaviour of the railway system.
+
 \subsubsection{Train Movements}
+A train movement is the circulation of a train from one point of the network to another. It is defined by an origin, a 
+destination, a route, a departure time, intermediate stops, and operational constraints. In railway operations, a train 
+cannot freely choose its path at any time. Its movement must be compatible with the infrastructure, the timetable, 
+signalling rules, and other train movements.
+
+Train movements can be classified according to their operational purpose. Passenger trains usually follow fixed routes 
+and timetables, stopping at stations to allow boarding and alighting. Freight trains may have more variable paths and may 
+be planned according to capacity availability, terminal access, and logistic constraints. Empty stock movements, 
+maintenance trains, and shunting movements introduce additional complexity because they may not correspond directly to 
+passenger service patterns.
+
+In simulation, train movements must be converted into routes and departure times. A route is a sequence of infrastructure 
+elements that a train follows. At a macro level, this may be a sequence of stations. At a micro level, it must be 
+converted into a sequence of track segments or edges. This conversion is one of the central challenges of railway digital 
+twin construction, because real operational records often describe train movements at the station level, while the 
+simulator requires detailed network paths.
+
+The feasibility of a train movement depends on connectivity and timing. Connectivity means that a valid path must exist 
+between consecutive locations. Timing means that the train must be inserted into the simulation at the correct time and 
+must respect operational constraints such as dwell times and travel times. If either the connectivity or timing is 
+inconsistent, the simulation may fail or produce unrealistic behaviour.
 
 \subsubsection{Timetables}
+A railway timetable defines the planned movements of trains over the network. It specifies departure and arrival times, 
+stopping patterns, running times, dwell times, and sometimes platform assignments or path allocations. Timetabling is a 
+central process in railway operations because it organizes the use of limited infrastructure capacity.
+
+Railway timetabling is a constrained optimization problem. A feasible timetable must satisfy commercial objectives, such 
+as service frequency and passenger demand, while also respecting technical constraints, such as minimum headways, track 
+capacity, station capacity, rolling stock availability, and safety margins. In dense networks, small changes to a 
+timetable may affect many other services because trains share infrastructure resources.
+
+Periodic timetables are common in passenger railway systems. In such timetables, services repeat at regular intervals, 
+for example every 30 or 60 minutes. This makes the timetable easier to understand for passengers and easier to coordinate 
+across lines. However, periodicity also introduces additional constraints because connections, crossings, and resource 
+usage must remain consistent across repeated time cycles.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/time_space_diagram.jpg}
+    \caption{Example of a time-space diagram.}\label{fig:time_space_diagram}
+\end{figure}
+
+A common way to visualize train movements and timetables is the time-space diagram. In such a diagram, one axis represents 
+time and the other represents position along a railway line. Each train is represented by a line. The slope of the line 
+reflects its speed, stops appear as horizontal segments, and crossings or overtakes can be analysed visually. Time-space 
+diagrams are particularly useful for understanding capacity, conflicts, delays, and recovery margins.
+
+% For this thesis, timetabling is relevant because operational train data must be transformed into simulation inputs. 
+% The punctuality dataset provides information about train movements and timing. The simulation model must convert 
+% this information into departure times, stops, and routes that can be executed in SUMO.\@ This requires aligning 
+% the operational timetable representation with the infrastructure representation.
+
+\subsubsection{Capacity Management}
+Railway capacity refers to the ability of infrastructure to accommodate train movements within a given period while 
+respecting safety, operational, and quality constraints. Unlike road capacity, railway capacity is highly dependent on 
+timetable structure, train heterogeneity, signalling, station dwell times, and route conflicts. Therefore, capacity is 
+not only a property of the physical infrastructure but also of the way it is used.
+
+A railway line with homogeneous trains running at similar speeds and stopping patterns can usually accommodate more trains 
+than a line where fast, slow, passenger, and freight trains are mixed. This is because heterogeneous traffic increases 
+the need for headways, overtaking, and timetable margins. Similarly, a station with limited platforms or conflicting 
+access routes may reduce capacity even if the surrounding tracks are not saturated.
+
+The UIC 406 method is often used as a reference approach for railway capacity analysis. It evaluates capacity consumption 
+by compressing train paths in a timetable and analysing how much time is occupied by train movements. This approach 
+highlights that capacity is related not only to the number of trains, but also to their ordering, spacing, speed 
+differences, and operational margins.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/uic_406_method.jpg}
+    \caption{UIC 406 method procedure.}\label{fig:uic_406_method}
+\end{figure}
+
+Capacity management is important for simulation because a simulation may generate routes that are technically connected 
+but operationally unrealistic if capacity constraints are ignored. For example, multiple trains may be assigned to the 
+same track or platform at overlapping times. A detailed simulator should therefore account for infrastructure occupation, 
+route conflicts, and safe separation.
+
+In this thesis, capacity is not the main optimization objective, but it remains a relevant concept. The macro-level model 
+provides a simplified view of train circulation, while the micro-level model makes it possible to represent more detailed 
+infrastructure constraints. Future extensions of the work could use the generated simulation framework to study capacity 
+consumption, bottlenecks, and infrastructure works planning.
 
 \subsubsection{Delay Propagation}
+Delay propagation is one of the most important phenomena in railway operations. A primary delay occurs when a train is 
+delayed by an external or local cause, such as technical failure, passenger boarding time, weather, infrastructure 
+problems, or operational incidents. A secondary delay occurs when this initial delay affects other trains through shared 
+infrastructure, rolling stock circulation, crew dependencies, passenger connections, or timetable conflicts.
 
+Railway networks are particularly sensitive to delay propagation because many trains share the same tracks, stations, 
+junctions, and timetable margins. A delayed train may occupy a track section later than planned, preventing another train 
+from using it. It may also miss a planned crossing, delay a connection, or arrive late at a station where the rolling 
+stock is needed for another service. As a result, a local disturbance can spread through the network and affect trains 
+that were not directly involved in the initial incident.
+
+Delay propagation can be studied at different levels. Microscopic approaches simulate train movements and conflicts in 
+detail. Macroscopic approaches analyse delays at the level of stations, lines, or aggregated network regions. Data-driven 
+approaches use historical operational data to estimate how delays evolve over time and space. Network-based approaches 
+represent trains, stations, or events as nodes and study how delays spread through their interactions.
+
+Capacity management is important for simulation because a simulation may generate routes that are technically connected 
+but operationally unrealistic if capacity constraints are ignored. For example, multiple trains may be assigned to the 
+same track or platform at overlapping times. A detailed simulator should therefore account for infrastructure occupation, 
+route conflicts, and safe separation.
+
+In the current work, delay propagation is not fully modelled as a predictive process. However, the reconstruction of 
+infrastructure and train movements is a prerequisite for such applications. Without a valid simulation network and 
+feasible train routes, it is not possible to study how operational disturbances propagate across the railway system.
 
 \subsection{Railway Network Representation}
+A railway network can be represented in several ways depending on the modelling objective. The choice of representation 
+determines which phenomena can be analysed and which assumptions are made. For digital twin and simulation purposes, 
+three broad families of representations are particularly relevant: graph-based modelling, physics-based modelling, and 
+logic-based modelling.
+
+These representations are not mutually exclusive. A detailed railway simulator may combine graph-based infrastructure, 
+physics-based train dynamics, and logic-based operational constraints. However, each representation emphasizes a 
+different aspect of the railway system.
+
 \subsubsection{Graph-Based Modeling}
+In this representation, the network is modeled as a directed graph, where nodes represent stations, switches or 
+significant waypoints, and edges correspond to track segments or connections between these nodes.
+
+One the key strengths of graph-based models lies in their compatibility with wellestablished algorithms from graph theory 
+and operation research. These models are particularly effective in macroscopic task planning, such as timetable design, 
+resource allocation, or delay propagation studies, where the physical movement of trains is not needed.
+
+Still, this approach lacks temporal and dynamic granularity. Trains usually modeled as moving instantaneously along edges 
+without continuous time progression constraints. Moreover, aspects like acceleration, braking or signaling rules are often 
+ignored or oversimplified. As a result, they are not effective in applications requiring realistic simulations of train 
+dynamics of precise safety control.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/macro_micro_station_modelling.jpg}
+    \caption{Example of a railway station modelling at macro and micro levels.}\label{fig:railway_station_macro_micro}
+\end{figure}
 
 \subsubsection{Physics-Based Modeling}
+Physics-based models aim to represent the physical behavior of trains and their interactions with the infrastructure. 
+These models simulate train motion as a function of traction force, resistance, braking and inertia.
+
+The strength of this approach is its realistic depiction of train dynamics, which is crucial for applications like 
+energy-efficient timetabling or validation of rolling stock performance under specific track conditions. 
+
+Yet, physics-based models ten to focus on individual trains or small-scale simulations due to their computational demands. 
+They do not capture the logical control elements such as interlocking, and they require detailed data like train mass, 
+motor characteristics or speed restrictions. Therefore, they are less suitable for modeling network-wide traffic flow or 
+verifying control logic at a system level.
 
 \subsubsection{Logic-Based Modeling}
+Logic-based models are designed to capture the discrete control logic and safety constraints in trains operations. One 
+major example is the modeling of interlocking systems, which ensures that only safe and conflict-free movements are 
+allowed on the network. These models abstract the railway as a set of finite states and transitions, with logical rules 
+defining when a train can move from one segment to the other based of multiple parameters like the sate of switches, 
+signals or blocks. They are usually expressed using formal methods. Tools like UupaAl and NuSMV allow formal verification 
+of safety properties and correctness conditions.
+
+Logic-based models are useful when the goal is the design and validation of signaling systems. They enable exhaustive 
+exploration of all possible states and transitions to identify potential conflicts or unsafe configurations. They are 
+also essential in the development on DTR, where real-time monitoring an predictive analysis require an accurate model of 
+control logic.
+
+However, this approach requires highly detailed rule definitions to be effective. It can also face scalability challenges 
+as the network size increases, especially when faces with concurrency (multiple trains operation simultaneously).
+
+Each of the three modeling captures different but complementary aspects of a railway system. Combining graph abstraction 
+for routing, physics modules for motion and simulation, and formal logic for safety are increasingly explored in the 
+industry to connect these domains and support robust digital representations of railway networks.
 
 
 \subsection{Railway Data Sources}
+Railway modelling and simulation depend strongly on the availability, completeness, and consistency of data. A digital 
+twin requires data describing both the physical infrastructure and the operation of trains. These two categories are often 
+stored in different systems, follow different formats, and use different levels of granularity. Aligning them is one of 
+the main challenges of railway digital twin construction.
+
+Infrastructure data describes what exists in the network. Operational data describes how the network is used. A 
+simulation-oriented digital twin must combine both: infrastructure data is required to build the network, while 
+operational data is required to generate train movements and validate the behaviour of the simulation.
+
 \subsubsection{Infrastructure Data}
+Infrastructure data includes information about tracks, switches, stations, platforms, signals, speed limits, 
+electrification, geometry, and topology. Depending on the source, this data may be available as geospatial data, tabular 
+data, XML files, engineering databases, or standardized railway formats.
+
+OpenStreetMap and OpenRailwayMap are examples of open geospatial sources that can provide railway infrastructure 
+information. They may include track geometry, station locations, railway line types, electrification, gauge, signals, and 
+other attributes. These sources are useful because they are publicly accessible and cover large areas. However, their 
+completeness and accuracy may vary depending on the region and the contributions of the mapping community.
+
+Institutional data sources, such as infrastructure manager databases, are usually more accurate and complete but are often 
+private or restricted. In Belgium, infrastructure data from Infrabel or related railway stakeholders can provide more 
+reliable information about stations, tracks, platforms, and operational assets. However, such data may require 
+preprocessing, cleaning, transformation, and alignment before it can be used for simulation.
+
+Standardized formats are also important in railway data exchange. RailML and related railway modelling standards provide 
+structured ways to describe infrastructure, rolling stock, timetables, and operational data. These formats are useful 
+because they improve interoperability between tools. However, converting raw data into such formats can require 
+significant modelling effort.
+
+In this thesis, infrastructure data is used at two levels. At the macro level, station and connectivity data are used to 
+build a station-to-station network. At the micro level, detailed track and platform data are used to reconstruct a finer 
+infrastructure graph. This distinction reflects the difference between global network connectivity and detailed 
+simulation-ready infrastructure.
 
 \subsubsection{Operational Data}
+Operational data describes the actual or planned movement of trains. It may include timetables, train identifiers, station 
+stops, arrival and departure times, delays, platform assignments, rolling stock information, and disruption records. 
+Operational data is essential for transforming a static railway infrastructure model into a dynamic simulation scenario.
 
+Timetable data provides the planned structure of train services. It defines which trains should run, when they should 
+depart, where they should stop, and how they should connect to other services. Punctuality data provides information about 
+actual train movements and deviations from the planned timetable. It can be used to analyse delay patterns, validate 
+simulation results, or generate realistic train routes.
+
+Operational data is often less straightforward to use than infrastructure data. It may contain missing records, 
+inconsistent station identifiers, cancelled trains, duplicated entries, or timing errors. It may also describe movements 
+at the station level, while the simulation requires detailed paths at the track level. Therefore, data cleaning and 
+transformation are necessary steps before operational data can be used in a simulator.
+
+A key challenge is the alignment between operational data and infrastructure data. A train record may indicate that a 
+train travelled from one station to another, but the infrastructure model must contain a valid path between these 
+locations. If the infrastructure is incomplete or if station identifiers do not match, the route cannot be generated. This 
+challenge is particularly important in the micro-level model, where route generation depends on detailed track connectivity.
+
+For this thesis, operational data is mainly used to generate train trips and simulation scenarios. In the macro-level 
+model, real operational data can be more easily mapped to station-to-station routes. In the micro-level model, the same 
+data requires a more detailed routing process because station-level movements must be translated into sequences of track 
+segments and platform stops. This explains why data alignment and route feasibility are central issues in the construction 
+of a railway digital twin.
 
 
 \section{Railway Simulators}
+Simulation plays an important role in the analysis, planning, and evaluation of railway systems. Since railway operations 
+involve many interacting components, it is often difficult to test new strategies directly on the real network. Simulators 
+provide a controlled environment in which infrastructure layouts, timetables, train movements, disruptions, and operational 
+scenarios can be evaluated before being applied in practice.
+
+In the context of DTRs, simulation is even more important. A digital twin requires a virtual environment 
+able to reproduce the behaviour of the physical system with sufficient accuracy. This does not necessarily mean that every 
+detail of the real railway network must be represented from the beginning. Rather, the simulation model must be consistent 
+with the objective of the study. For example, a high-level model may be sufficient for analysing station-to-station 
+movements, while a detailed infrastructure model is required to study switches, platforms, signalling constraints, and 
+local conflicts.
+
+Railway simulators can be classified according to several criteria. A first distinction concerns the level of granularity. 
+Macroscopic simulators represent traffic at an aggregated level, often using stations, lines, flows, or timetable events. 
+Microscopic simulators represent individual trains and infrastructure elements in more detail. A second distinction 
+concerns the modelling paradigm. Some tools focus mainly on operational simulation, others on infrastructure design, 
+timetable planning, capacity analysis, or real-time traffic management. Finally, simulators may differ in terms of 
+openness, extensibility, data requirements, interoperability, and support for automated workflows.
+
 \subsection{Overview of Existing Simulators}
+Several simulation platforms exist for railway and transport systems. Some are specifically designed for railways, while 
+others are general-purpose or multimodal traffic simulation environments that can be adapted to rail use cases.
 
-\subsection{Comparative Analysis}
+% OpenTrack is one of the most widely known railway simulation tools. It is a microscopic railway simulator used to model 
+% railway infrastructure, rolling stock, timetables, and operational constraints. In OpenTrack, trains run according to 
+% predefined timetables over a railway network, and the simulator computes their movements while considering signalling and 
+% operational constraints. It can produce outputs such as train graphs, occupation diagrams, and statistical indicators. 
+% OpenTrack is therefore well suited for detailed operational studies, timetable evaluation, capacity analysis, and 
+% disturbance analysis~\cite{opentrack}.
 
-\subsection{Limitations and Gaps in Current Simulators}
+% RailSys is another railway-specific simulation and planning environment. It is used for infrastructure planning, timetable 
+% construction, operational simulation, capacity management, and punctuality analysis. One of its strengths is its ability 
+% to represent detailed railway infrastructure and signalling constraints, including ETCS-related analyses. RailSys is 
+% mainly oriented toward professional railway planning and operational evaluation, especially for infrastructure managers 
+% and railway undertakings~\cite{railsys}.
+
+% OSRD, or Open Source Railway Designer, is an open-source railway-oriented platform. It provides functionalities for 
+% railway infrastructure design, capacity analysis, timetabling, simulation, and short-term path requests. Unlike several 
+% commercial railway simulation tools, OSRD is open-source and designed around modern web-based components. It is therefore 
+% relevant for research contexts where reproducibility and transparency are important~\cite{osrd}. However, its focus is 
+% primarily railway-specific planning and design, whereas this thesis requires a flexible simulation framework that can be 
+% programmatically generated and adapted from heterogeneous data sources.
+
+% SUMO, Simulation of Urban MObility, is a general-purpose open-source traffic simulation platform. It was initially 
+% designed for road traffic simulation, but it supports multiple transport modes, including public transport, pedestrians, 
+% bicycles, and railways. SUMO is microscopic and continuous, meaning that vehicles are simulated individually and evolve 
+% over continuous simulation time. Its flexibility, open-source nature, XML-based input formats, Python tools, and TraCI 
+% interface make it particularly attractive for research and prototyping~\cite{sumo2018}. Although SUMO is not originally a 
+% railway-specific simulator, it provides railway functionalities that can be used to model trains, railway edges, train 
+% stops, rail signals, schedules, and rail-specific constraints~\cite{sumo_docs,sumo_railways}.
+
+% Other transport simulation platforms, such as AnyLogic, MATSim, Aimsun, or PTV Vissim, can also be used for mobility 
+% simulation. However, their relevance for railway digital twins depends on the level of railway support required. Some are 
+% strong for multimodal transport, agent-based simulation, or road traffic modelling, but they may not provide the same 
+% level of railway-specific infrastructure representation as dedicated railway tools. Conversely, specialised railway tools 
+% may offer detailed operational modelling but may be less flexible for custom data-driven pipelines or open experimentation.
+
+\begin{table}[H]
+\centering
+\caption{Comparative analysis of railway and transport simulation tools}\label{tab:railway_simulators_comparison}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{p{2.6cm} p{2.5cm} p{2.9cm} p{3.2cm} p{3.2cm} p{3.2cm}}
+\hline
+\textbf{Simulator} &
+\textbf{Type} &
+\textbf{Main focus} &
+\textbf{Main strengths} &
+\textbf{Main limitations} &
+\textbf{Relevance for this thesis} \\
+\hline
+
+\textbf{OpenTrack} &
+Microscopic railway simulator &
+Railway operation, timetable evaluation, capacity and infrastructure analysis &
+Detailed railway-specific modelling; supports infrastructure, rolling stock, timetables and signalling constraints; provides train graphs, occupation diagrams and operational statistics &
+Requires detailed and well-structured railway data; less suited for fully custom open data pipelines; not primarily designed as an open experimental framework &
+Highly relevant as a reference railway simulator, but less suitable for the implemented data-driven and reproducible pipeline \\
+\hline
+
+\textbf{RailSys} &
+Professional railway planning and simulation suite &
+Capacity analysis, timetable planning, travel time computation, headway analysis and ETCS-related studies &
+Strong railway-specific capabilities; designed for infrastructure managers and railway operators; supports detailed operational and capacity studies &
+Commercial/professional environment; limited openness for academic reproducibility; requires detailed infrastructure and operational input data &
+Relevant for comparison with professional railway tools, but less aligned with the objective of building an open and programmable prototype \\
+\hline
+
+\textbf{OSRD} &
+Open-source railway-specific platform &
+Railway infrastructure design, capacity analysis, timetabling, simulation and short-term path requests &
+Open-source; railway-oriented by design; supports infrastructure and timetable workflows; suitable for capacity and pathfinding studies &
+More oriented toward railway design and planning workflows; integration with a custom heterogeneous data-processing pipeline may require additional modelling effort &
+Relevant because it is open-source and railway-specific, but SUMO was preferred for its flexibility, scriptability and simulation workflow control \\
+\hline
+
+\textbf{SUMO} &
+Open-source microscopic traffic simulator &
+Multimodal traffic simulation, route generation, demand modelling, public transport and railway simulation &
+Open-source and highly scriptable; supports XML-based network generation, routing tools, outputs, TraCI interaction and large-scale automated workflows; includes railway-specific features such as rail edges, train stops and rail signals &
+Not originally designed as a railway-only simulator; detailed signalling, interlocking, dispatching and platform assignment require additional modelling effort &
+Selected as the main simulation platform because it enables full control over network generation, trip generation, execution and output processing \\
+\hline
+
+\textbf{AnyLogic / MATSim} &
+General-purpose or transport simulation platforms &
+Agent-based simulation, multimodal mobility, large-scale transport demand modelling &
+Useful for multimodal and agent-based transport scenarios; suitable for studying passenger behaviour, demand patterns or large-scale mobility systems &
+Limited native support for detailed railway infrastructure constraints such as switches, interlocking, block occupation and platform-level operations &
+Useful as general transport simulation references, but less appropriate for the railway infrastructure reconstruction objectives of this thesis \\
+\hline
+
+\end{tabular}
+}
+\end{table}
+
+The choice of a railway simulator depends on the intended use case. For a digital twin foundation, several criteria are 
+important. First, the simulator must be able to represent the railway infrastructure at the required level of detail. 
+Second, it must support train route generation and simulation. Third, it should be compatible with available data sources. 
+Fourth, it should allow outputs to be extracted and compared with real operational data. Finally, for academic research, 
+reproducibility and extensibility are important criteria.
+
+Specialised railway simulators such as OpenTrack and RailSys provide strong railway-specific capabilities. They are 
+designed to represent timetables, train movements, signalling systems, capacity constraints, and detailed infrastructure. 
+This makes them highly relevant for professional railway planning and operational analysis. Their main advantage is that 
+they directly encode railway concepts that are often simplified in general-purpose traffic simulators. However, they may 
+also require detailed infrastructure and timetable data, and their integration into a fully custom data pipeline may be 
+less straightforward depending on licensing, formats, and available interfaces.
+
+OSRD offers an interesting alternative because it is open-source and railway-specific. It directly targets infrastructure 
+design, capacity analysis, timetabling, and simulation. This makes it particularly relevant for railway planning workflows. 
+However, its architecture and data model are more directly oriented toward railway design and pathfinding, whereas the 
+objective of this thesis is to investigate how heterogeneous railway data can be transformed into simulation-ready 
+artefacts and executed within a flexible traffic simulation environment.
+
+SUMO occupies a different position. It is not as railway-specialised as OpenTrack, RailSys, or OSRD, but it provides a 
+highly flexible and programmable simulation environment. Its main strengths are openness, extensibility, scalability, 
+scriptability, and the availability of many tools for network generation, routing, demand generation, output processing, 
+and online interaction. These characteristics make SUMO suitable for experimental research where the objective is not only 
+to run a simulation, but also to generate the simulation network automatically from data, modify scenarios programmatically, and analyse outputs with custom scripts.
+
+For this thesis, SUMO was selected because it allows the complete simulation workflow to be controlled. The network can 
+be generated from XML files, routes can be created automatically, simulations can be executed through command-line tools, 
+and outputs can be parsed and transformed into datasets suitable for analysis. This level of control is essential for 
+comparing macro-level and micro-level railway representations and for evaluating the feasibility of integrating real 
+operational data into a simulation pipeline.
+
+Nevertheless, the use of SUMO also introduces limitations. Because SUMO was originally developed for general traffic 
+simulation, some railway-specific aspects require additional modelling effort. Detailed railway signalling, interlocking, 
+platform assignment, train dispatching, and timetable regulation are not automatically available unless they are explicitly 
+represented in the input files or controlled through additional logic. Therefore, SUMO is well suited for building a 
+flexible simulation-oriented digital twin foundation, but it does not remove the need for careful railway data modelling.
+
+% \subsection{Comparative Analysis}
+
+% \subsection{Limitations and Gaps in Current Simulators}
 
 \subsection{SUMO\@: General Features}
 
