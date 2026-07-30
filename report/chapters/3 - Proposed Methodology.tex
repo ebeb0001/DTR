@@ -20,7 +20,33 @@ assignment, switch detection, route feasibility, and simulation complexity. By d
 evaluates how different levels of abstraction influence the construction of a railway digital twin.
 
 \section{Positioning of This Work}
-[TODO with the SOTA]
+The state of the art shows that railway digital twins and railway simulation tools provide a relevant foundation for 
+analysing railway systems. They make it possible to combine infrastructure data, operational data, simulation models, 
+and analytical services within a common framework. However, the literature also highlights that building an executable 
+railway simulation from real-world data remains difficult, mainly because railway data is heterogeneous, incomplete, and 
+represented at different levels of detail.
+
+A first challenge concerns the transformation of raw railway datasets into simulation-ready inputs. Existing simulators 
+often assume that infrastructure, timetable, and operational data are already available in consistent and compatible 
+formats. In practice, infrastructure data may describe stations, tracks, switches, platforms, or geometries, while 
+operational data may only describe train passages at station level. Aligning these datasets is therefore a central step in 
+the construction of a railway digital twin.
+
+A second challenge concerns the level of representation. A macro-level model is easier to generate and more robust for 
+large-scale station-to-station simulation, but it ignores detailed infrastructure constraints. A micro-level model is 
+closer to the physical infrastructure because it represents tracks, platforms, switches, and routing possibilities, but it 
+is also more sensitive to missing data, incorrect topology, and routing inconsistencies.
+
+This thesis is positioned at the intersection of these issues. Its objective is not to develop a complete real-time railway 
+digital twin or to replace professional railway simulators, but to study the foundational steps required to build 
+simulation-ready railway models from heterogeneous data. The proposed methodology therefore develops two complementary 
+representations: a macro-level model, used to validate the integration of real operational data into simulation, and a 
+micro-level model, used to investigate the challenges of detailed infrastructure reconstruction.
+
+By comparing these two approaches, this work addresses the gap identified in the literature concerning end-to-end workflows 
+for railway digital twin construction. The contribution lies in the design, implementation, and evaluation of a 
+data-driven pipeline able to transform infrastructure and punctuality data into SUMO-compatible railway simulation 
+scenarios.
 
 
 \section{Framework}
@@ -64,8 +90,31 @@ twin.
 
 
 \section{Why SUMO?}
+The choice of SUMO is motivated by the objective of this thesis: generating railway simulation scenarios automatically 
+from heterogeneous datasets. Several railway simulation tools exist, including OpenTrack, RailSys, and OSRD.\@ These tools 
+provide strong railway-specific functionalities and are highly relevant for professional planning, timetable evaluation, 
+and capacity analysis. However, they often require detailed and well-structured railway input data, whereas this work 
+focuses on building a flexible and reproducible pipeline from raw infrastructure and operational datasets.
 
-[TODO with the SOTA]
+SUMO was selected because it is open-source, scriptable, and compatible with automated data-processing workflows. Its 
+XML-based input structure makes it possible to generate networks, routes, stops, and configuration files directly from 
+Python scripts. It also provides command-line tools which are useful for converting networks, generating trips, and 
+computing executable routes.
+
+Another advantage of SUMO is that it can support both levels of representation considered in this thesis. At the macro 
+level, stations can be represented as nodes and railway connections as edges. At the micro level, railway infrastructure 
+can be represented with rail edges, train stops, lanes, and more detailed route definitions. This flexibility makes SUMO 
+suitable for comparing simplified station-to-station simulation with more detailed infrastructure-based simulation.
+
+SUMO also produces structured outputs, such as trip information, stop information, and simulation summaries, which can be 
+processed after execution and compared with operational data. In addition, tools such as sumolib and TraCI provide 
+possibilities for future extensions involving more interactive or real-time digital twin functionalities.
+
+Nevertheless, SUMO is not a railway-only simulator. Detailed signalling, interlocking, dispatching, platform assignment, 
+and conflict management are not automatically inferred from raw data. These elements must be explicitly modelled or added 
+through additional logic. For this thesis, this limitation is acceptable because the goal is precisely to study how 
+railway data can be transformed into simulation-ready models. SUMO therefore provides a flexible platform for developing 
+and evaluating the proposed railway digital twin prototype.
 
 \section{Data Available}
 The proposed methodology relies on two main types of datasets: infrastructure data and operational data. Infrastructure 
