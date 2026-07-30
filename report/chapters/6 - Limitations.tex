@@ -136,3 +136,33 @@ route conflict detection, and traffic regulation before simulation execution. Th
 the generated scenario is not only connected, but also operationally feasible.
 
 \section{Scalability and Computational Complexity}
+The final limitation concerns the generalization of the proposed approach. The pipeline was developed and evaluated using 
+the available Belgian railway datasets and the specific structure of the data used in this thesis. Although the general 
+methodology could be transferred to other railway networks, several components would require adaptation.
+
+First, infrastructure datasets may differ significantly between countries or infrastructure managers. Station identifiers, 
+track geometries, platform descriptions, switch representations, and coordinate systems may follow different conventions. 
+The preprocessing and matching rules developed in this work may therefore not be directly applicable to another network.
+
+Second, operational data may also differ in structure and granularity. Some datasets may contain only planned timetables, 
+while others may include real-time train positions, platform assignments, delay causes, or detailed route information. The 
+quality of the resulting digital twin would depend strongly on the type of operational data available.
+
+Third, the assumptions used in the macro-level and micro-level models may not be equally valid for all railway systems. A 
+simple station-to-station abstraction may be sufficient for low-density regional lines, but less appropriate for dense 
+metropolitan networks. Similarly, a micro-level reconstruction based on geometric proximity may work well in some areas 
+but fail in complex multi-level stations or yards.
+
+The proposed framework should therefore be seen as a methodological foundation rather than a universal solution. It 
+demonstrates how railway infrastructure and operational data can be transformed into simulation-ready artefacts, but it 
+also shows that the quality of the final simulation depends on the availability of detailed data, the correctness of the 
+reconstructed infrastructure, the realism of the routing strategy, and the operational constraints represented in the 
+simulator.
+
+Overall, these limitations do not invalidate the contribution of the thesis. On the contrary, they clarify the main 
+technical barriers that must be addressed to move from a simulation-oriented prototype toward a more complete railway 
+digital twin. The macro-level model validates the integration of real operational data in a simplified setting, while the 
+micro-level model identifies the additional requirements needed for realistic infrastructure-based simulation. Future work 
+should therefore focus on improving platform localization, integrating route-level operational data, replacing single 
+shortest-path routing with multiple feasible path strategies, and adding timetable and conflict-management mechanisms to 
+the simulation pipeline.
