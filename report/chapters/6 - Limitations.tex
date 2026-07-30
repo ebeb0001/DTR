@@ -1,1 +1,138 @@
 \chapter{Limitations}\label{chap:limitations}
+This chapter discusses the main limitations encountered during the development of the proposed railway digital twin 
+simulation pipeline. Some limitations were already briefly introduced in the implementation chapter, but they are analysed 
+here in more detail. The objective is not only to identify what prevented the system from reaching a complete operational 
+simulation, but also to clarify which issues are related to data availability, modeling assumptions, routing strategies, 
+simulator constraints, and generalization.
+
+The proposed framework successfully demonstrates that railway infrastructure and operational data can be transformed into 
+SUMO-compatible simulation artefacts. However, the results also show that building a realistic railway simulation from 
+heterogeneous real-world datasets remains a difficult task. This is especially visible at the micro level, where the 
+objective is to reproduce the detailed physical structure of the network and to map real train movements onto this 
+infrastructure. The limitations discussed in this chapter therefore provide important insights for future work on railway 
+digital twins.
+
+\section{Data Availability and Quality}
+A first important limitation concerns the availability and precision of the infrastructure data. Although the available 
+datasets provide a strong basis for reconstructing the railway network, some information required for a fully realistic 
+simulation is either missing, incomplete, or not available at the level of detail required by the simulator. This issue is 
+particularly important for the micro-level model, where the simulation depends on the accurate representation of tracks, 
+switches, platforms, and their spatial relationships.
+
+One of the clearest examples concerns platform positions. The available data provides information about stations and the 
+number of platforms, but it does not always provide the exact physical position of each platform in the railway 
+infrastructure. As a result, platforms had to be reconstructed using geometric methods, mainly by associating each station 
+platform with nearby track segments. This approach makes it possible to generate platform candidates and to create SUMO 
+train stops, but it also introduces uncertainty. Even when the correct number of platforms is detected, their exact 
+placement may not correspond to the real infrastructure. A platform may be associated with a neighbouring track instead of 
+the operationally correct one, especially in complex stations where several tracks are close to each other.
+
+This limitation has a direct impact on simulation quality. In SUMO, train stops must be attached to specific lanes. If a 
+platform is associated with an incorrect lane, the train may stop at a location that is geographically close to the 
+station but operationally unrealistic. In some cases, the selected track may also be difficult or impossible to reach from 
+the reconstructed route. Therefore, platform detection is not only a data enrichment step, but also a critical dependency 
+for the feasibility of the micro-level simulation.
+
+Another limitation concerns operational route data. The punctuality dataset describes train passages through stations and 
+provides temporal information such as planned and observed arrival or departure times. However, it does not provide the 
+exact physical route followed by each train inside the railway infrastructure. In other words, the data indicates that a 
+train moved from one station to another, but it does not specify which tracks, switches, platforms, or junctions were 
+actually used. This absence of route-level information is one of the main obstacles to constructing a complete micro-level 
+simulation from real data.
+
+Because of this limitation, train paths had to be reconstructed manually or algorithmically from station sequences. This 
+task is considerably more complex at the micro level than at the macro level. Without reference data describing the 
+possible or historical paths used by trains, the reconstruction process must infer these paths from infrastructure 
+topology alone. This makes the result highly dependent on the completeness and correctness of the generated graph.
+
+A dataset describing possible train paths, authorized routes, or historical physical trajectories would significantly 
+improve the pipeline. Such a dataset would provide a direct link between operational records and infrastructure elements. 
+It would also make it possible to distinguish between several possible routes connecting the same pair of stations, which 
+is essential in dense railway areas. Without this information, the simulation can reconstruct plausible paths, but it 
+cannot guarantee that these paths correspond to the routes actually used in railway operations.
+
+\section{Modeling Assumptions}
+The proposed methodology relies on two levels of abstraction: a macro-level model and a micro-level model. This distinction 
+is useful because it makes it possible to compare a simple and robust representation with a more detailed but more fragile 
+one. However, each level introduces specific modeling assumptions that limit the realism of the resulting simulation.
+
+At the macro level, stations are represented as single nodes and railway links as direct edges between stations. This 
+abstraction is useful for integrating real operational data, because punctuality records are also expressed mainly at the 
+station level. However, this representation hides the internal structure of stations. Platforms, switches, parallel tracks, 
+junctions, signals, and local routing constraints are not represented explicitly. Consequently, the macro-level model 
+cannot reproduce conflicts occurring inside stations, platform occupation constraints, or detailed route interactions near 
+complex junctions.
+
+The macro-level model is therefore mainly suitable for selected station chains with moderate traffic. It provides a 
+functional end-to-end validation of the pipeline, but it cannot be interpreted as a complete operational simulation of the 
+railway system. This is why the macro-level simulation was restricted to selected parts of the network instead of 
+attempting to reproduce the full national traffic. In dense areas, the internal structure of stations and junctions becomes 
+too important to be ignored.
+
+At the micro level, the opposite limitation appears. The model represents the infrastructure in greater detail, but this 
+increases the sensitivity of the pipeline to small data errors. Missing connections, incorrect directions, ambiguous 
+platform assignments, or imperfect switch detection can prevent valid routes from being found. In a detailed infrastructure 
+graph, a small topological inconsistency may invalidate an entire train journey, because the route generation process 
+requires a continuous path between each pair of consecutive stations.
+
+Another important modeling assumption concerns the use of geometric proximity for platform matching. The method assumes 
+that the closest relevant track segments are likely to correspond to the station platforms. This assumption is often 
+reasonable, but it does not always hold in complex railway environments. Large stations, yards, parallel tracks, 
+underground sections, or curved station layouts can create ambiguous spatial configurations. In such cases, geometric 
+proximity alone may not be sufficient to identify the correct operational platform.
+
+These assumptions show that the micro-level model should be understood as a simulation-ready reconstruction of the railway 
+infrastructure rather than as an exact copy of the real network. The objective was to generate a usable infrastructure 
+model from available data, but the absence of some operational and infrastructure details limits the degree of realism 
+that can be achieved.
+
+\section{Route Reconstruction and Micro-Level Simulation}
+Another group of limitations is related to the use of SUMO as the simulation platform. SUMO provides a flexible and 
+scriptable environment for generating networks, defining routes, running simulations, and extracting outputs. This 
+flexibility was one of the main reasons for selecting it in this thesis. However, SUMO was not originally designed as a 
+railway-specific operational planning tool. Some railway-specific concepts therefore require additional modeling effort.
+
+In particular, detailed signalling, interlocking, dispatching, platform assignment, route reservation, and railway capacity 
+management are not automatically reproduced unless they are explicitly encoded in the generated files or controlled 
+through additional logic. This is an important limitation for the micro-level simulation, because detailed infrastructure 
+alone is not sufficient to reproduce realistic railway operations. A network may be physically connected, but the 
+simulation may still generate unrealistic behaviour if operational constraints are not represented.
+
+This issue is visible in the random-trip simulation. The generated trips can be successfully routed through the network, 
+but they are not based on a real timetable and do not fully account for headways, platform occupation, train speeds, 
+junction capacity, or safe temporal separation between incompatible movements. As a consequence, trains may be inserted 
+too close to one another or may attempt to use conflicting infrastructure sections at similar times. This can lead to 
+warnings such as emergency braking, blocked insertion areas, teleportation events, or collision-related messages.
+
+These warnings should not be interpreted only as failures of the generated infrastructure. They also reflect the 
+limitations of unconstrained random trip generation in a detailed railway network. In real railway operations, train 
+movements are planned and regulated to avoid such conflicts. Without an equivalent timetable generation or dispatching 
+layer, the simulator receives routes and departure times that may be technically valid but operationally unrealistic.
+
+A further limitation concerns calibration. The simulation parameters used in SUMO, such as speed, dwell time, insertion 
+rate, routing parameters, and trip generation settings, influence the behaviour of the simulation. In the current work, 
+these parameters were selected to obtain plausible and executable scenarios, but they were not calibrated against a 
+complete operational reference model. As a result, the simulation can be used to validate the feasibility of the pipeline, 
+but not yet to provide precise quantitative estimates of railway performance.
+
+\section{Simulation Constraints in SUMO}
+The proposed pipeline also faces limitations related to computational complexity. The macro-level approach is relatively 
+efficient because it manipulates a reduced graph composed mainly of stations and station-to-station links. This makes it 
+easier to generate routes from real operational data and to execute simulations on selected station chains.
+
+The micro-level approach is more demanding. It processes a much larger number of infrastructure elements and applies 
+additional operations such as switch detection, platform matching, track segmentation, network generation, and route 
+computation. This additional cost is expected because the model provides a richer representation of the infrastructure. 
+However, it also limits the ease with which the approach can be scaled to large scenarios with real operational traffic.
+
+The difference between routing feasibility and simulation completion is also important. A route can be computed 
+successfully, but the corresponding train may still fail to complete its trip during simulation because of timing conflicts, 
+blocked lanes, unrealistic insertion times, or interactions with other trains. This means that scalability is not only a 
+question of graph size or computation time. It also depends on the quality of the generated timetable and on the 
+operational consistency of the simulated traffic.
+
+For this reason, future versions of the pipeline would need to include additional mechanisms for timetable validation, 
+route conflict detection, and traffic regulation before simulation execution. These mechanisms would help ensure that 
+the generated scenario is not only connected, but also operationally feasible.
+
+\section{Scalability and Computational Complexity}
