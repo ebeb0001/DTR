@@ -1,70 +1,38 @@
 \chapter{Implementation}\label{chap:implementation}
 
 \section{Macro-Level Modeling}
-The macro-level model constitutes the first operational implementation of the railway digital twin
-developed in this work. Its primary objective is to generate a simulation-ready representation of the
-Belgian railway network while maintaining a level of abstraction that remains computationally
-manageable. Unlike the micro-level model presented later in this thesis, which aims to reproduce the
-detailed infrastructure of railway stations and track layouts, the macro-level model focuses on the
-connectivity between stations and the movement of trains across the network.
+The macro-level model constitutes the first operational implementation of the simulation-oriented railway digital twin 
+developed in this thesis. Its objective is to generate a simplified but executable representation of the Belgian railway 
+network in SUMO.\@ At this level of abstraction, stations are represented as nodes and railway connections between stations 
+as edges. Detailed infrastructure elements such as platforms, switches, individual tracks, signals, and station-level 
+routing constraints are intentionally omitted.
 
-At this level of abstraction, railway stations are represented as nodes and railway connections between
-stations are represented as edges. Detailed infrastructure components such as switches, signaling
-systems, individual tracks, and platform assignments are intentionally omitted. This simplification
-significantly reduces the complexity of the generated network while preserving its overall topology and
-operational structure.
-
-The implementation of the macro-level model serves several purposes. First, it validates the complete
-workflow required to construct a railway digital twin, from raw infrastructure and operational data to
-simulation outputs. Second, it provides an initial environment for evaluating trip generation methods
-based on real railway operations. Finally, it establishes a baseline model against which the more
-detailed micro-level implementation can later be compared.
-
-The implementation was developed in Python and relies on Apache Spark for large-scale data
-processing and SUMO for railway simulation. The complete workflow
-consists of four main stages: data processing, railway network generation, trip generation, and
-simulation execution.
+This abstraction makes the model computationally manageable and suitable for validating the complete workflow, from raw 
+railway data to simulation outputs. It also provides a baseline against which the more detailed micro-level model can 
+later be compared. The implementation was developed in Python, using Apache Spark for data processing and SUMO for 
+simulation execution. The workflow consists of four main stages: data processing, network generation, trip generation, and 
+simulation.
 
 \subsection{Data Processing Pipeline}
-The generation of the macro-level railway model begins with the construction of a data processing
-pipeline responsible for transforming heterogeneous railway datasets into a format compatible with
-SUMO\@. Railway data originates from a unique source but exhibits significant differences in structure,
-granularity, and purpose. Consequently, a preprocessing phase is required before any simulation
-artefacts can be generated.
+The macro-level model starts with a data processing pipeline that transforms infrastructure and operational datasets into 
+a format compatible with SUMO.\@ Three main types of data are used: station data, station-to-station connectivity data, 
+and punctuality data. Station data provides identifiers, names, and geographical coordinates. Connectivity data describes 
+the railway links between neighbouring stations. Punctuality data contains operational records of train passages through 
+stations.
 
-Three categories of data are used within the macro-level model:
-\begin{itemize}
-    \item \textbf{Railway station data:} contains information describing the geographical location and identification of
-    Belgian railway stations.
-    
-    \item \textbf{Railway connectivity data:} provides information regarding the direct railway links connecting stations.
-    
-    \item \textbf{Railway punctuality data:} operational records describing the observed movements of trains across the 
-    railway network.
+The preprocessing follows an Extract-Transform-Load approach. First, the raw datasets are loaded into Apache Spark 
+dataframes. Spark is used mainly because the punctuality dataset can be large and requires efficient filtering, grouping, 
+and temporal transformations. The transformation step then standardizes identifiers, processes geographical information, 
+removes inconsistent records when necessary, and prepares the data for simulation generation.
 
-\end{itemize}
+A filtering step is also applied to restrict the simulation to the selected area and time period. The user can choose a 
+subset of stations to simulate, and neighbouring stations required to preserve connectivity may be included automatically. 
+This makes it possible to focus on coherent station chains rather than the entire national network, which reduces 
+complexity while preserving meaningful train movements.
 
-The preprocessing workflow follows a classical Extract-Transform-Load (ETL) approach. During the
-extraction phase, raw datasets are loaded into Apache Spark dataframes. Spark was selected because of
-its ability to efficiently process large datasets while providing a unified interface for data transformation
-operations. Although the macro-level simulation itself does not require distributed execution, the
-volume of punctuality records makes Spark particularly suitable for preprocessing tasks.
-
-Once loaded, the datasets undergo a transformation phase during which inconsistencies are corrected
-and the data structure is standardized. Particular attention is paid to geographical information.
-Infrastructure datasets and operational datasets do not always use identical coordinate
-representations, resulting in small discrepancies between station locations and railway line geometries.
-Coordinate normalization procedures are therefore applied to ensure consistency between datasets.
-
-A filtering phase is subsequently performed to restrict the simulation to the geographical area and time
-period selected by the user. The simulation generator allows a subset of stations to be specified as
-input. In addition to these stations, neighboring stations required to preserve network connectivity are
-automatically included in the simulation. This approach reduces computational complexity while
-ensuring that realistic routes can still be generated.
-
-The output of the preprocessing pipeline consists of a collection of cleaned datasets containing
-standardized station information, station-to-station railway connections, and train circulation records.
-These datasets constitute the foundation upon which the simulation network is generated.
+The output of this pipeline is a set of cleaned and harmonized datasets containing station information, 
+station-to-station links, and train circulation records. These datasets are then used to generate the SUMO network and the 
+corresponding train routes.
 
 % \begin{figure}[h]
 %     \centering
@@ -74,91 +42,49 @@ These datasets constitute the foundation upon which the simulation network is ge
 
 
 \subsection{Railway Network Generation}
-Once the preprocessing phase has been completed, the railway network can be generated. The
-objective of this stage is to transform the cleaned infrastructure datasets into a graph representation
-that can subsequently be converted into a SUMO railway network.
+After preprocessing, the railway network is generated as a station-to-station graph. Each station becomes a node, and each 
+direct railway connection becomes an edge. The graph can be defined as $G = (V, E)$, where $V$ is the set of stations and 
+$E$ is the set of railway links between them.
 
-The process begins with the loading of station information. Each station is uniquely identified by its
-official identifier and associated with a geographical position. Internally, station information is stored in
-dictionary-based structures that provide efficient access during subsequent processing stages. For each
-station, the implementation stores its identifier, name, and geographical coordinates.
+For each station, the implementation stores the station identifier, name, and geographical coordinates. For each 
+connection, it stores the origin station, destination station, distance, and, when available, the geometry of the railway 
+corridor. Preserving the geometry allows the generated SUMO network to remain visually close to the real railway layout, 
+while keeping the model much simpler than the actual infrastructure.
 
-After station loading, railway links between stations are reconstructed from the station-to-station
-dataset. Each railway connection contains the identifier of the departure station, the identifier of the
-arrival station, the physical distance separating the two stations, and the geographical shape describing
-the railway corridor.
+The graph is then converted into SUMO-compatible XML files. The node file defines the stations included in the simulation, 
+while the edge file defines the rail links between them. Additional files define train stops, vehicle types, route 
+information, and the simulation configuration. The final network is generated with netconvert, which transforms the node 
+and edge definitions into a SUMO network file.
 
-Unlike a purely abstract graph representation, the implementation preserves the geometry of railway
-lines whenever this information is available. Railway corridors are therefore represented as polylines
-rather than simple straight segments. This decision improves the visual realism of the generated SUMO
-network while preserving the simplicity of the macro-level model.
-
-The resulting railway network can be interpreted as a directed graph $G = (V, E)$, where the set of
-vertices $V$ corresponds to railway stations and the set of edges $E$ corresponds to direct railway
-connections between stations.
-
-Once the graph has been constructed, a series of XML files compatible with SUMO are generated
-automatically. These files include the node definitions, edge definitions, stop definitions, train
-definitions, and simulation configuration files required to execute the simulation.
-
-The generated node file contains all stations included in the simulation. Each station is represented as a
-SUMO node associated with a unique identifier and geographical coordinates. Similarly, the edge file
-contains the railway links connecting stations and specifies the geometry and characteristics of each
-connection.
-
-The final step consists of converting these files into a SUMO network using the netconvert utility.
-This tool automatically transforms the graph representation into a simulation-ready railway network.
-The resulting network preserves the geographical distribution of stations and railway corridors while
-remaining significantly simpler than the actual Belgian railway infrastructure.
-
-This abstraction offers several advantages. The resulting network is easy to generate, computationally
-efficient, and sufficiently realistic for validating trip generation and operational workflows. However, it
-also introduces limitations. Since stations are represented by a single node, infrastructure-level
-phenomena such as route conflicts, switch occupation, signal interactions, and platform assignment
-cannot be reproduced accurately.
+This representation is simple, robust, and easy to generate. However, because each station is represented as a single node, 
+the model cannot reproduce internal station operations such as platform allocation, switch occupation, signal interactions, 
+or local route conflicts.
 
 
 \subsection{Trip Generation}
-Once the railway network has been generated, train movements must be created in order to execute
-the simulation. Rather than relying exclusively on synthetic traffic generation, the proposed
-methodology aims to reconstruct train movements from real operational data.
+Once the macro-level network has been generated, train movements are reconstructed from the punctuality dataset. 
+The objective is to use real operational data rather than relying only on synthetic traffic.
 
-The punctuality dataset contains records describing successive train passages through railway stations.
-Each record includes a train identifier, a station identifier, and temporal information such as planned
-departure times and observed departure times. Although these records provide valuable operational
-information, they do not directly describe complete train journeys.
+The punctuality dataset contains station-level records for train passages. Each record includes a train identifier, a 
+station identifier, and temporal information such as planned and observed times. However, the dataset does not directly 
+provide complete SUMO routes. A reconstruction step is therefore required.
 
-A reconstruction process is therefore required to transform isolated station observations into coherent
-train routes. For each train and operating day, records are first sorted chronologically according to their
-planned departure time. The next station visited by the train is then identified using window-based
-operations implemented in Apache Spark.
+For each train and operating day, the records are grouped and sorted chronologically according to the planned timetable. 
+Consecutive station pairs are then extracted to reconstruct the sequence of stations visited by the train. These station 
+sequences are mapped onto the macro-level network and converted into SUMO route definitions.
 
-This procedure allows consecutive station pairs to be extracted and transformed into station-to-station
-movements. The resulting dataset can be interpreted as a collection of train trajectories describing the
-progression of trains through the railway network.
+Departure times must also be converted into SUMO simulation time. Since SUMO represents time as seconds elapsed since the 
+start of the simulation, each planned departure time is transformed by computing its difference from the selected 
+simulation start date.
 
-For each reconstructed movement, a simulation departure time must be computed. Since SUMO
-internally represents time as the number of seconds elapsed since the beginning of the simulation,
-departure times observed in the punctuality dataset are converted into simulation timestamps. This
-conversion is performed by calculating the difference between the planned departure time and the
-simulation start date selected by the user.
-
-The reconstructed train movements are subsequently aggregated into complete train journeys. Each
-journey contains the train identifier, the sequence of visited stations, and the associated departure
-times. These journeys are then translated into SUMO route definitions.
-
-The use of real operational data offers several advantages over purely random traffic generation. First,
-it preserves realistic traffic density patterns. Second, it reproduces actual station usage frequencies and
-train departure distributions. Finally, it provides a more representative basis for evaluating the
-behaviour of the digital twin, since the generated traffic reflects real railway operations rather than
-artificial assumptions.
-
+This approach preserves realistic train movements, station usage patterns, and departure time distributions. It therefore 
+provides a more representative simulation scenario than purely random traffic generation, while remaining compatible with 
+the simplified station-to-station model.
 
 \subsection{Simulation}
-After the generation of the macro-level railway network and the reconstruction of train routes from operational data, 
-the simulation scenario can be executed within SUMO\@. The objective of this step is to validate the ability of the 
-generated model to reproduce railway movements at a station-to-station level while keeping the simulation computationally 
-manageable.
+After the network and routes have been generated, the macro-level scenario can be executed in SUMO.\@ The simulation 
+configuration references all required files: the network file, route file, additional files for stops and trains, and 
+output definitions.
 
 The macro-level simulation is not intended to reproduce the full Belgian railway network in a single scenario. Although 
 the generated network can theoretically include a large number of stations, simulating the complete national traffic 
@@ -175,63 +101,42 @@ intensity, the simulation remains coherent with the assumptions of the macro-lev
 is therefore used in a context where local infrastructure conflicts are less dominant and where station-to-station train 
 movements can still be meaningfully simulated.
 
-A second advantage of this restriction is that real operational trajectories can be directly integrated into the 
-simulation. Since the selected stations form a coherent and connected railway chain, the reconstructed train movements 
-extracted from the punctuality data can be mapped onto the generated SUMO network. Each train route is defined by a 
-sequence of stations and by departure times converted into simulation time. The resulting route file therefore reflects 
-real observed railway operations rather than artificial movements.
-
 The duration of the simulation is configurable. The user can specify the number of operating days to be included in the 
 scenario. This parameter determines the time window used when filtering the operational data and therefore controls the 
 number of train movements inserted into the simulation. A short simulation period can be used for debugging and validation, 
 while a longer period can be selected to analyse traffic behaviour over multiple days.
 
 Once the network, train routes, stop definitions, and simulation configuration files have been generated, the simulation 
-can be launched directly in SUMO\@. During execution, trains circulate along the station-to-station graph according to the 
-reconstructed timetable. Their movements are mainly governed by the generated routes, departure times, and travel times 
-associated with the railway connections. The simulation produces standard SUMO output files, including trip information, 
-stop information, and summary statistics. These outputs are then processed in order to obtain structured datasets that 
-can be compared with the original operational data.
+can be launched directly in SUMO\@. During execution, trains circulate along the station-to-station graph according to 
+the reconstructed routes and departure times. Since detailed infrastructure is not represented, train movements are mainly 
+governed by the generated routes, travel times, and SUMO’s internal simulation rules.
 
-Several outputs are produced during simulation execution. 
-The \texttt{tripinfo} output contains information regarding completed train journeys, including travel times and delays.
-The \texttt{stopinfo} output records stopping events occurring at stations. Finally, \texttt{summary} files
-provide aggregated information concerning the evolution of the simulation.
+Several outputs are produced by the simulation. The \texttt{tripinfo} file provides information about completed train 
+journeys, the \texttt{stopinfo} file records stopping events at stations, and \texttt{summary} outputs describe the 
+global evolution of the simulation. A post-processing module parses these XML outputs and converts them into CSV files 
+whose structure is closer to the original punctuality data.
 
-The post-processing stage reconstructs both scheduled and simulated arrival and departure times for each train and 
-station. This conversion makes it possible to directly compare simulation results with real railway observations and 
-therefore evaluate the validity of the generated digital twin.
+This post-processing step reconstructs simulated arrival and departure information for each train and station. As a result, 
+the macro-level simulation can be compared with historical operational data and used to evaluate whether the generated 
+digital twin reproduces station-to-station train movements in a coherent way.
 
-In this way, the macro-level simulation acts as a first validation layer for the proposed railway digital twin. It does 
-not aim to capture all local operational constraints of the railway infrastructure, but it demonstrates that a realistic 
-simulation workflow can be constructed from real station connectivity and punctuality data. It also provides a scalable 
-basis for analysing train movements on selected parts of the railway network before moving toward the more detailed 
-micro-level model.
-
-The complete workflow implemented in the macro-level model can therefore be summarized as follows:
-\begin{enumerate}
-    \item Infrastructure and operational data are first preprocessed and standardized.
-    \item A station-to-station railway network is then generated and converted into a SUMO network.
-    \item Historical punctuality records are subsequently transformed into train routes.
-    \item These routes are simulated within SUMO\@.
-    \item The resulting outputs are finally converted into datasets suitable for analysis and validation.
-\end{enumerate}
+The macro-level workflow can therefore be summarized as follows: raw data is cleaned and standardized, a 
+station-to-station SUMO network is generated, real punctuality records are transformed into train routes, the scenario is 
+simulated, and the outputs are converted into datasets suitable for validation.
 
 
 \subsection{Limitations}
-Although the macro-level model provides a functional and computationally efficient representation of the railway network, 
-it remains limited by its high level of abstraction. Stations are represented as single nodes and railway connections as 
-direct edges, which means that detailed infrastructure elements such as platforms, switches, signals, parallel tracks, and 
-station-level routing constraints are not explicitly modelled. As a result, the model cannot accurately reproduce local 
-operational phenomena such as platform occupation, route conflicts inside stations, or interactions between trains at 
-complex junctions.
+Although the macro-level model validates the overall pipeline, it remains limited by its level of abstraction. Stations 
+are represented as single nodes and railway corridors as direct edges. As a result, detailed infrastructure elements such 
+as platforms, switches, signals, and individual tracks are not explicitly represented. The model therefore cannot 
+accurately reproduce local operational constraints, platform conflicts, switch occupation, or station-level routing 
+decisions.
 
-Another limitation concerns the scope of the simulation. The macro-level approach is mainly suitable for selected chains 
-of neighbouring stations with moderate traffic intensity. It is therefore less appropriate for dense areas or major 
-stations where the internal infrastructure plays a central role in traffic behaviour. Nevertheless, this simplified model 
-remains useful as a first validation step for the overall digital twin workflow, especially for testing the integration of 
-real operational data into a SUMO-based railway simulation.
-
+The model is also dependent on the quality of the available infrastructure and operational data. It can reconstruct train 
+movements at station level, but it cannot identify the exact physical route followed by trains inside complex railway 
+areas. Nevertheless, the macro-level implementation remains an important first step: it demonstrates that real operational 
+data can be integrated into a SUMO-based railway simulation and provides a robust baseline for comparison with the 
+micro-level model.
 
 \section{Micro-Level Modeling}
 While the macro-level model provides a simplified representation of the railway network suitable for large-scale traffic 
