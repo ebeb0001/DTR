@@ -88,18 +88,16 @@ output definitions.
 
 The macro-level simulation is not intended to reproduce the full Belgian railway network in a single scenario. Although 
 the generated network can theoretically include a large number of stations, simulating the complete national traffic 
-would introduce a high level of complexity and would make the interpretation of the results more difficult. For this 
-reason, the simulation is restricted to selected parts of the network. These parts correspond to chains of neighbouring 
-stations where the train traffic remains moderate. In practice, this means that the user selects a set of stations to be 
-included in the simulation, and the generation pipeline constructs the corresponding local railway subnetwork.
+would introduce a high level of complexity in capacity management in frequently visited stations (stations with dense 
+traffic, multiple platforms, many intersecting services, and complex internal routing would require infrastructure details 
+that are not represented at this level of abstraction). For this reason, the simulation is restricted to selected parts of 
+the network (chosen by the user). These parts correspond to chains of neighbouring stations where the train traffic remains 
+moderate. In practice, this means that the user selects a set of stations to be included in the simulation, and the 
+generation pipeline constructs the corresponding local railway subnetwork.
 
-This selection strategy is particularly important for the macro-level model. Since stations are represented as single 
-nodes and complex station layouts are not explicitly modelled, highly congested stations are avoided. Major stations with 
-dense traffic, multiple platforms, many intersecting services, and complex internal routing would require infrastructure 
-details that are not represented at this level of abstraction. By focusing instead on station chains with lower traffic 
-intensity, the simulation remains coherent with the assumptions of the macro-level model. The simplified representation 
-is therefore used in a context where local infrastructure conflicts are less dominant and where station-to-station train 
-movements can still be meaningfully simulated.
+By focusing instead on station chains with lower traffic intensity, the simulation remains coherent with the assumptions 
+of the macro-level model. The simplified representation is therefore used in a context where local infrastructure conflicts 
+are less dominant and where station-to-station train movements can still be meaningfully simulated.
 
 The duration of the simulation is configurable. The user can specify the number of operating days to be included in the 
 scenario. This parameter determines the time window used when filtering the operational data and therefore controls the 
@@ -107,7 +105,7 @@ number of train movements inserted into the simulation. A short simulation perio
 while a longer period can be selected to analyse traffic behaviour over multiple days.
 
 Once the network, train routes, stop definitions, and simulation configuration files have been generated, the simulation 
-can be launched directly in SUMO\@. During execution, trains circulate along the station-to-station graph according to 
+can be launched directly in SUMO.\@ During execution, trains circulate along the station-to-station graph according to 
 the reconstructed routes and departure times. Since detailed infrastructure is not represented, train movements are mainly 
 governed by the generated routes, travel times, and SUMO’s internal simulation rules.
 
@@ -139,84 +137,66 @@ data can be integrated into a SUMO-based railway simulation and provides a robus
 micro-level model.
 
 \section{Micro-Level Modeling}
-While the macro-level model provides a simplified representation of the railway network suitable for large-scale traffic 
-simulations, it does not accurately represent the physical infrastructure required for detailed operational analyses. In 
-particular, elements such as switches, platforms, parallel tracks, and complex station layouts are either simplified or 
-omitted. To overcome these limitations, a micro-level railway network model was developed.
+The micro-level model was developed to overcome the main abstraction of the macro-level representation. Instead of 
+modelling the railway network only as stations connected by aggregated links, the micro-level model aims to represent the 
+physical infrastructure in greater detail. Tracks, platforms, switches, and operational segments are explicitly 
+reconstructed and converted into SUMO-compatible elements.
 
-The objective of the micro-level modeling process is to reconstruct the railway infrastructure with a much higher level 
-of spatial and topological accuracy by exploiting detailed infrastructure data together with operational information. 
-Unlike the macro-level model, where stations are represented as single nodes connected through aggregated railway links, 
-the micro-level model explicitly represents every individual track, switch, platform, and operational segment. This 
-detailed representation enables realistic train routing, precise conflict detection, infrastructure capacity analysis, 
-and the simulation of operational scenarios at station level.
+The objective of this model is to evaluate whether a more realistic railway simulation can be generated from the available 
+infrastructure and operational datasets. Compared with the macro-level model, this approach provides a richer 
+representation of the railway network, but it also introduces stronger requirements on data quality and topological 
+consistency. A valid simulation requires not only that infrastructure elements are detected, but also that they form a 
+connected and routable network.
 
-The construction of the micro-level network follows a multi-stage processing pipeline. First, raw infrastructure data are 
-collected from the available railway datasets and transformed into a consistent geographic representation. The resulting 
-railway graph is then enriched through several dedicated algorithms responsible for identifying key operational elements 
-of the infrastructure. These include automatic switch detection, platform identification, railway track segmentation, and 
-the construction of a dual graph representation suitable for routing algorithms.
+This approach significantly increases the realism of the generated digital twin. The explicit representation of railway 
+assets enables more accurate train movements, better infrastructure utilization, and the possibility of evaluating local 
+operational phenomena such as conflicts at junctions, platform occupancy, and the propagation of delays within complex 
+stations.
 
-Once the infrastructure has been reconstructed, train trips are generated using either synthetic traffic scenarios or real 
-operational data. These trips are subsequently integrated into the SUMO railway simulation environment, allowing trains to 
-circulate on the generated infrastructure while respecting the physical constraints imposed by the detailed network 
-topology.
+The implementation follows five main stages: data processing, infrastructure modelling, trip generation, simulation, 
+and limitation analysis.
 
-Compared to the macro-level model, this approach significantly increases the realism of the generated digital twin. The 
-explicit representation of railway assets enables more accurate train movements, better infrastructure utilization, and 
-the possibility of evaluating local operational phenomena such as conflicts at junctions, platform occupancy, and the 
-propagation of delays within complex stations.
-
-The following sections describe each stage of the micro-level modeling process in detail, starting with the data 
-processing pipeline before presenting the infrastructure extraction algorithms, trip generation methodology, simulation 
-setup, and the main limitations of the proposed approach.
 
 \subsection{Data Processing Pipeline}
-The data processing pipeline follows a multi-stage Extract–Transform–Load (ETL) process. Infrastructure data is first 
-collected from the available railway datasets and transformed into a unified format suitable for network reconstruction. 
-The raw geographical information contains track geometries represented as sequences of coordinates describing the railway 
-centerlines.
+The micro-level data processing pipeline follows an ETL process. The raw infrastructure data contains geographical track 
+geometries represented as sequences of coordinates. These geometries are first cleaned and normalized in order to obtain a 
+consistent spatial representation of the railway network.
 
-After data cleaning and normalization, several infrastructure extraction algorithms are applied. The first stage consists 
-of identifying railway switches from the track topology. These switches constitute the connection points between different 
-railway tracks and form the basis of the network graph.
+Several processing steps are then applied to enrich the infrastructure. First, switches are detected from the topology of 
+the track network. Then, platforms are associated with nearby track segments using a spatial proximity-based method. When 
+several stations or platforms are assigned to the same track segment, a segmentation step is applied to increase the 
+granularity of the network. Finally, the processed infrastructure is converted into graph structures used for route 
+generation and simulation.
 
-The second stage focuses on platform detection. Stations are associated with nearby track segments using a 
-proximity-based matching procedure that assigns platforms to the closest available tracks.
-
-Once platforms have been matched, the network is analysed to identify situations where multiple stations are assigned to 
-the same track segment. Such conflicts are resolved through a dedicated track segmentation process that increases the 
-granularity of the infrastructure representation while preserving the original geometry.
-
-The resulting infrastructure model is then converted into a graph representation that can be used for route generation 
-and simulation. Finally, train trips are generated using either synthetic traffic scenarios or operational railway data 
-before being integrated into the SUMO simulation environment.
+The output of the pipeline consists of a detailed railway network containing track segments, detected switch-like nodes, 
+platform-to-track associations, and routing structures. These elements are then exported into SUMO files and used to 
+generate train movements.
 
 \subsection{Infrastructure Modeling}
 \subsubsection{Switch Detection}
-The railway infrastructure is first represented as a graph in which track extremities correspond to nodes and track 
-sections correspond to edges. For each node, the number of neighbouring track segments is computed.
+Switch detection is based on the topology of the railway graph. Track extremities are represented as nodes, and track 
+sections are represented as edges. For each node, the number of connected track segments is computed.
 
-Nodes connected to exactly two neighbouring segments are considered part of a continuous railway line and are therefore 
-not classified as switches. In contrast, nodes connected to three or more neighbouring segments represent branching or 
-merging points and are identified as switches. These locations correspond to operational infrastructure elements that 
-allow trains to change routes within the network.
+Nodes connected to two track segments are considered part of a continuous railway line. Nodes connected to three or more 
+track segments are classified as switch-like elements because they represent branching or merging points in the 
+infrastructure. These detected switches are then used to enrich the micro-level network and support routing through the 
+reconstructed topology.
 
 The resulting switch and edge datasets forms the foundation of the micro-level network model and is subsequently used for 
-graph construction, route generation, and simulation.
+graph construction, route generation, and simulation. 
+
+This approach does not require explicit switch labels in the source data. However, it depends strongly on the quality of 
+the reconstructed track topology. Missing, duplicated, or incorrectly connected track segments can affect the number of 
+detected switches.
 
 \subsubsection{Platform Detection}
-The infrastructure dataset provides the geographical position of railway stations as well as the number of platforms 
-available at each station and their heights. However, this information is not directly linked to the track segments 
-extracted from the railway network. Consequently, a matching procedure was developed to associate each station platform 
-with the most relevant track segments.
+Platform detection aims to associate station platforms with the track segments on which trains can stop. The available 
+data provides station locations and platform information, but these elements are not directly linked to SUMO lanes. A 
+matching procedure is therefore required.
 
-The proposed approach relies exclusively on spatial proximity. For each station, the Euclidean distance between the 
-station location and nearby track segments is computed. The candidate segments are then ranked according to their 
-distance to the station centroid.
-
-Let (N) denote the number of platforms associated with a given station. The algorithm selects the (N) closest track 
-segments and assigns them to the station. 
+The implemented method relies on spatial proximity. For each station, a search area is defined around its coordinates. 
+Nearby track segments are identified and ranked according to their distance from the station. If a station has $N$ 
+platforms, the $N$ closest candidate track segments are selected and associated with the station platforms.
 
 \begin{figure}[h]
     \centering
@@ -224,21 +204,16 @@ segments and assigns them to the station.
     \caption{Example of platform detection initial setup}
 \end{figure}
 
-For each station, a research zone is defined around its coordinates. 
-This research zone is a circular area with an adaptative radius (e.g., 100 meters) that encompasses the area where 
-they are likely located. The radius of the research zone can be adjusted based on the density of platforms in the area, 
-ensuring that it is large enough to capture all relevant track segments while minimizing the inclusion of irrelevant 
-segments.
+For each station, a research zone is defined around its coordinates. This research zone is a circular area with an 
+adaptative radius (e.g., 100 meters) that encompasses the area where they are likely located. The radius of the research 
+zone can be adjusted based on the density of platforms in the area, ensuring that it is large enough to capture all 
+relevant track segments while minimizing the inclusion of irrelevant segments.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_searching_zone.png}
     \caption{Example of platform detection searching zone}
 \end{figure}
-
-This assumption is based on the observation that station platforms are generally located alongside the tracks that serve 
-passenger operations. Therefore, the nearest segments constitute a reasonable approximation of the actual platform 
-locations while requiring only publicly available infrastructure data.
 
 Within the research zone, the script identifies all track segments from the track dataset that intersect with the zone. 
 Then, the script ranks the track segments based on their proximity to the station coordinates. The remaining track 
@@ -253,10 +228,6 @@ segments are classified into three categories (given a station that has $n$ plat
     coordinates. These segments are unlikely to correspond to platforms and can be disregarded in the platform detection 
     process ($1.5n \le rank \le 2n$).
 \end{enumerate}
-This ranking approach allows the script to prioritize track segments that are most likely to correspond to platforms 
-while minimizing the inclusion of irrelevant segments. By categorizing the track segments based on their proximity to 
-the station coordinates, the script can effectively identify potential platform locations and improve the accuracy of 
-the platform detection process.
 
 \begin{figure}[h]
     \centering
@@ -264,19 +235,19 @@ the platform detection process.
     \caption{Example of platform detection ranking when the number of platform is 3}
 \end{figure}
 
-The resulting associations are evaluated using distance-based quality indicators. Stations for which the selected 
-segments are located within a short distance are considered to have a high-quality match, whereas larger distances 
-indicate potentially less reliable assignments. This quality assessment is later used to analyse the overall accuracy of 
-the generated infrastructure model.
+This method is simple and scalable, but it remains an approximation. It works well when platforms are located close to the 
+corresponding tracks, but it can be less reliable in complex stations where many parallel tracks are located close to each 
+other.
 
 \subsubsection{Track Segmentation}
-The platform matching process may produce situations in which several stations are associated with the same track segment. 
-Such conflicts occur when a single segment represents a long railway section passing through multiple stations, making it 
-impossible to uniquely associate each platform with a distinct operational element.
+Track segmentation is introduced to improve the granularity of the reconstructed infrastructure. In some cases, a single 
+track segment may be associated with several stations or platforms. This creates ambiguity because the same segment cannot 
+represent several distinct stopping locations accurately.
 
-To resolve this issue, an additional track segmentation procedure is applied after the platform matching stage. The 
-objective is to increase its operational granularity to ensure that each station platform can be uniquely associated with 
-a distinct track segment. 
+To address this issue, long or conflicting track segments are split into smaller sub-segments while preserving the 
+original geometry. After segmentation, the platform detection process can be applied again on a more detailed 
+infrastructure representation. This improves the association between platforms and tracks and produces a network better 
+suited for simulation. 
 
 First, all segments assigned to more than one station are identified. Only these conflicting segments are processed, 
 while the remaining network remains unchanged. Each selected segment is then divided into smaller sub-segments according 
@@ -288,10 +259,9 @@ to a maximum segment length threshold of 800 meters.
     \caption{Track segmentation Initial setup}
 \end{figure}
 
-The segmentation process follows the existing geometry of the track. New sub-segments are created exclusively using the 
-coordinates already present in the original polyline representation. No interpolation or artificial points are introduced. 
-Distances are computed after projecting the geographical coordinates into the Belgian Lambert 72 coordinate system 
-(EPSG:31370), allowing accurate metric measurements.
+New sub-segments are created exclusively using the coordinates already present in the original polyline representation. 
+No interpolation or artificial points are introduced. Distances are computed after projecting the geographical coordinates 
+into the Belgian Lambert 72 coordinate system (EPSG:31370), allowing accurate metric measurements.
 
 For each generated sub-segment, new extremity nodes are created when necessary and the corresponding track attributes are 
 recomputed. The resulting infrastructure therefore preserves the original network geometry while providing a finer 
@@ -319,10 +289,8 @@ routing, timetable generation, and railway traffic simulation tasks.
 
 
 \subsubsection{Dual Graph Construction}\label{sec:dual_graph}
-Once the railway infrastructure has been segmented into operational track sections, a graph representation is constructed 
-to efficiently compute train routes through the network. The proposed approach adopts a dual graph representation, where 
-each railway track segment becomes a graph node, while the possible transitions between consecutive track segments are 
-represented as directed edges.
+A dual graph is constructed to support route computation at the micro level. In this representation, each track segment 
+becomes a node of the graph, and each feasible transition between two consecutive track segments becomes a directed edge.
 
 \begin{figure}[h]
     \centering
@@ -330,20 +298,20 @@ represented as directed edges.
     \caption{Dual graph}
 \end{figure}
 
-This representation considerably simplifies routing operations. Since trains always travel along track sections and move 
-from one section to another through switches or junctions, representing track segments as graph nodes naturally models 
-train movements. Furthermore, routing algorithms operate directly on operational entities instead of geometric 
-infrastructure elements.
+This representation makes it possible to compute routes between platforms rather than only between stations. Dijkstra’s 
+shortest-path algorithm is then applied to find the shortest valid path through the dual graph. The resulting sequence of 
+track segments is converted into SUMO edge identifiers and inserted into route definitions.
 
-The construction of the dual graph is performed in two stages.
+A route cache is used to avoid recomputing identical paths. Each computed route is stored according to its origin station, 
+destination station, and platform pair. This reduces the computational cost when several trains use the same 
+station-to-station movement.
 
-First, each track segment is associated with its start and end junctions. A temporary lookup structure is generated in 
-order to quickly retrieve all tracks connected to a given infrastructure node. This preprocessing step accelerates the 
-graph construction by avoiding repeated searches through the complete infrastructure dataset.
-
-Next, the directed graph is created using the \texttt{NetworkX} library. For every pair of track segments, a directed edge is added 
-whenever the destination node of the first track corresponds to the origin node of the second track. Formally, given two 
-track segments ($t_i$) and ($t_j$), a directed edge is created if
+The construction of the dual graph is performed in two stages.First, each track segment is associated with its start and 
+end junctions. A temporary lookup structure is generated in order to quickly retrieve all tracks connected to a given 
+infrastructure node. This preprocessing step accelerates the graph construction by avoiding repeated searches through 
+the complete infrastructure dataset.Next, the directed graph is created using the \texttt{NetworkX} library. For every 
+pair of track segments, a directed edge is added whenever the destination node of the first track corresponds to the 
+origin node of the second track. Formally, given two track segments ($t_i$) and ($t_j$), a directed edge is created if
 
 \begin{equation}
     \text{end}(t_i) = \text{start}(t_j).
@@ -356,195 +324,84 @@ the travelled distance across the railway infrastructure.
 The resulting graph can be formally defined as $G=(V,E)$,where each vertex ($v \in V$) represents a railway track segment 
 and each directed edge ($(u,v)\in E$) denotes a feasible transition between two consecutive track segments.
 
-Once the dual graph has been generated, shortest paths between stations can be efficiently computed. Since a station may 
-contain multiple platforms, routing cannot simply be performed between station identifiers. Instead, every platform of the 
-origin station is paired with every platform of the destination station. For each platform pair, the corresponding track 
-segments are identified and Dijkstra's shortest-path algorithm, provided by NetworkX, is executed on the dual graph using 
-the track lengths as edge weights.
+Finally, whenever the operational dataset contains trips between station pairs that have not yet been processed, the 
+corresponding routes are computed on demand and added to the cache. This strategy guarantees that every station-to-station 
+movement required by the timetable is associated with a valid infrastructure path before the simulation is generated.
 
-The algorithm returns the ordered sequence of track segments connecting the two platforms. This sequence is then converted 
-into the corresponding SUMO edge identifiers by identifying the physical connections between consecutive track segments. 
-The resulting edge sequence can be directly inserted into SUMO route definitions without requiring any additional 
-processing.
-
-To avoid repeatedly solving identical routing problems, all computed routes are stored in a cache indexed by the origin 
-station, destination station, and platform pair. Subsequent requests for the same station pair immediately retrieve the 
-previously computed route, significantly reducing the computational cost during trip generation. Finally, whenever the 
-operational dataset contains trips between station pairs that have not yet been processed, the corresponding routes are 
-computed on demand and added to the cache. This strategy guarantees that every station-to-station movement required by 
-the timetable is associated with a valid infrastructure path before the simulation is generated.
-
-\subsection{Trip Generation}
-The next step consists of generating train trips that will be executed during the simulation. A trip defines the movement 
-of a train through the railway network by specifying its origin, destination, departure time, and the route computed 
-between these locations. The quality and realism of the generated trips directly influence the representativeness of the 
-simulation and, consequently, the validity of the obtained results.
-
-Different strategies can be adopted for trip generation. Synthetic trips are useful for validating the generated 
-infrastructure, evaluating routing capabilities, and creating controlled traffic scenarios with varying levels of 
-congestion. Conversely, trips reconstructed from real operational data allow the simulation to reproduce actual railway 
-operations and provide a more realistic representation of traffic conditions.
-
-To address both requirements, this work implements two complementary trip generation approaches. The first approach 
-automatically generates random trips over the reconstructed railway network, while the second reconstructs train movements 
-from real operational datasets. The following sections present these two methodologies in detail.
-
-\subsubsection{Random Trips}
-The first trip generation strategy aims at producing synthetic railway traffic over the reconstructed network without 
-relying on historical operational data. This approach is primarily intended to validate the generated infrastructure, 
-verify the connectivity of the network, and evaluate the routing capabilities of the simulation under controlled 
-conditions.
-
-To achieve this, the reconstructed train paths obtained during the infrastructure generation phase are first analyzed in 
-order to identify every station that appears either as the starting point or the terminal point of an existing railway 
-service. These stations constitute the candidate locations from which synthetic trips can be generated.
-
-Once the candidate stations have been identified, weighting files are automatically generated for SUMO's randomTrips.py 
-utility. Each platform associated with a candidate station receives an identical weight, while all other tracks are 
-excluded from the selection process. Consequently, the trip generator only selects railway platforms corresponding to 
-valid departure and arrival stations, preventing the creation of unrealistic trips originating from intermediate tracks, 
-switches, or maintenance sections.
-
-The randomTrips.py tool is then executed on the generated railway network. The generation process is constrained to 
-railway edges only, ensuring that all produced trips are compatible with the rail infrastructure. Several parameters are 
-used to increase the realism of the generated traffic. In particular, a minimum travel distance is imposed between the 
-origin and destination to avoid trivial journeys, while a variable insertion rate is specified throughout the simulation 
-period to emulate fluctuations in railway traffic intensity during the day. The resulting output is a set of synthetic 
-trips, each containing a departure edge, an arrival edge, and an associated departure time.
-
-Although these trips are syntactically valid, they do not necessarily correspond to railway services that can actually be 
-operated within the Belgian railway network. To ensure operational consistency, an additional validation step is performed. 
-For each generated trip, the departure and arrival platforms are first mapped back to their corresponding stations. The 
-algorithm then verifies whether these two stations belong to at least one reconstructed train path extracted from the 
-operational dataset. Only trips whose origin and destination are connected by an existing railway service are retained. 
-Trips failing this verification are discarded.
-
-Finally, the validated trips are converted into a SUMO route file using the duarouter routing engine. This tool computes 
-the complete railway path through the generated infrastructure while respecting the network topology and railway 
-connectivity constraints. The resulting routes are subsequently used as input for the simulation.
-
-\subsubsection{Real Data Trips}
-In addition to synthetic traffic generation, a second approach was developed to reproduce actual railway operations using 
-real punctuality data. Unlike the previous method, which generates artificial train movements, this approach aims at 
-recreating real train services by preserving their scheduled sequence of stops and planned timetable. The objective is to 
-obtain a simulation that closely reflects real railway traffic and therefore provides a more realistic digital twin of the 
-Belgian railway network.
-
-In principle, this approach would allow all train journeys present in the selected operational dataset to be inserted into 
-the simulation. For each train and each operating day, the timetable is reconstructed as an ordered list of station stops. 
-Each station is then associated with one of its detected platforms, and the route between consecutive stations is computed 
-using the dual graph constructed during the infrastructure modeling phase. The final route of a train is obtained by 
-concatenating all the paths computed between successive stops.
-
-The first step consists in processing the punctuality dataset in order to reconstruct each train service individually. The 
-operational records are first cleaned by removing incomplete entries and converting the planned arrival and departure 
-timestamps into simulation time expressed in seconds from the beginning of the simulation. The records are then grouped 
-according to the train identifier and operating date, allowing each train journey to be reconstructed as an ordered 
-sequence of stations associated with their planned arrival and departure times.
-
-Once the timetable has been reconstructed, each station visited by a train is associated with the set of platforms 
-detected during the infrastructure modeling phase. Platform assignment is then performed while respecting the timetable 
-constraints and ensuring that no two trains occupy the same platform simultaneously. A configurable safety buffer is 
-introduced between successive platform occupations in order to prevent unrealistic conflicts and better represent 
-operational constraints encountered in real railway systems.
-
-The main difference with the random trip generation strategy lies in the route computation. Instead of relying on SUMO to 
-determine a shortest path between two stations, this methodology exploits the dual graph introduced in 
-Section~\ref{sec:dual_graph}. For every pair of consecutive stations in a train service, the corresponding path is 
-searched within the dual graph, taking into account the selected departure and arrival platforms. The complete train 
-route is then obtained by concatenating the paths computed between every pair of successive stations. This approach 
-guarantees that trains follow the detailed railway topology reconstructed during the infrastructure modeling stage and 
-remain consistent with the operational characteristics of the network.
-
-However, although the methodology is conceptually sound, the current implementation did not produce exploitable 
-simulation results. During the platform assignment process, many consecutive station pairs could not be connected because 
-no valid path was found in the generated dual graph. As a consequence, a large proportion of train services were rejected 
-before route generation, preventing the construction of a complete operational timetable.
-
-The absence of feasible paths does not originate from the timetable itself but rather from the current state of the 
-generated dual graph. Some infrastructure elements or connections required to guarantee complete network connectivity are 
-still missing or incorrectly represented, making certain station-to-station journeys impossible despite their existence 
-in the real railway network. Improving the connectivity and completeness of the dual graph therefore constitutes a 
-necessary step before realistic timetable-based simulations can be successfully performed.
-
-Despite these limitations, this approach establishes the foundations for integrating real operational data into the 
-proposed railway digital twin. Once the dual graph reconstruction is sufficiently complete, the methodology will enable 
-the simulation of real train movements while preserving both the actual timetable and the detailed infrastructure topology.
-
-
-\subsection{Simulation}
-Once the micro-level infrastructure has been generated and train trips have been created, the resulting scenario can be 
-simulated in SUMO\@. In contrast with the macro-level model, the micro-level simulation relies on a detailed 
-representation of the railway infrastructure. Tracks, switches, platforms, and operational segments are explicitly 
-represented, which allows trains to circulate through a much more realistic network topology.
-
-The simulation procedure is designed to support two different types of traffic scenarios. The first scenario uses 
-randomly generated trips, while the second attempts to reproduce real train movements extracted from operational data. 
-These two approaches serve different purposes. Random trips are mainly used to validate the generated infrastructure and 
-to test whether trains can move through the network under controlled conditions. Real-data trips, on the other hand, aim 
-to reproduce actual railway operations and therefore provide a more realistic simulation of the Belgian railway network.
-
-\subsubsection{Random-trip simulation}
-The random-trip simulation is based on synthetic train movements generated from the reconstructed railway network. Although 
-the generated trips do not correspond to real train services, the generation process is constrained in order to make them 
-as realistic as possible. The objective is not to reproduce a specific timetable, but to create plausible railway 
-movements that can be executed on the micro-level infrastructure.
-
-Additional parameters provided by SUMO’s trip generation and routing tools are then adjusted to improve the realism of 
-the scenario. The insertion rate controls the frequency at which trains are introduced into the simulation. By modifying 
-this parameter, it is possible to generate different traffic densities and to emulate periods with more or fewer train 
-movements. Other parameters, such as the minimum trip distance, the departure time distribution, and the selection weights 
-assigned to candidate edges, are also used to avoid unrealistic routes and to favour meaningful station-to-station 
-movements.
-
-After the random trips have been generated, they are routed through the micro-level network. The routing step computes 
-complete paths between the selected departure and arrival platforms while respecting the topology of the SUMO network. 
-The resulting routes are then inserted into the simulation configuration. This process makes it possible to test whether 
-the reconstructed infrastructure is sufficiently connected and whether the generated railway assets can support train 
-circulation.
-
-The number of simulated days is configurable by the user, as in the macro-level model. This parameter controls the 
-simulation horizon and influences the number of generated trips. A short duration is useful for validating the network 
-and detecting routing errors, while a longer duration can be used to evaluate the behaviour of the infrastructure under 
-more sustained traffic conditions.
-
-The random-trip simulation therefore plays an important validation role. Since the generated trips are not constrained by 
-a real timetable, they provide a flexible way to test the robustness of the network, the correctness of the platform 
-detection process, the quality of the routing, and the ability of SUMO to execute train movements on the reconstructed 
+The dual graph is therefore a central component of the micro-level model. It provides the link between detailed 
+infrastructure reconstruction and operational route generation. However, it also becomes a critical point of failure: 
+if the graph is incomplete or incorrectly connected, real train journeys cannot be mapped onto the reconstructed 
 infrastructure.
 
-\subsubsection{Real-data simulation}
-The second simulation scenario aims to use real operational data instead of synthetic trips. In this case, the objective 
-is to reproduce the train services contained in the punctuality dataset. Each train movement should be reconstructed from 
-the real sequence of stations visited by the train, associated with the corresponding planned arrival and departure times, and then mapped onto the detailed micro-level infrastructure.
+\subsection{Trip Generation}
+Trip generation defines the train movements executed in the micro-level simulation. 
+Two strategies are considered: random trip generation and real-data-based trip generation.
 
-However, the current implementation of this scenario did not produce exploitable simulation results. The main difficulty 
-appears during the mapping of real train movements onto the reconstructed micro-level infrastructure. For majority of  
-station pairs, no valid path could be found in the dual graph. As a consequence, a significant number of train services 
-were rejected before being converted into SUMO routes, preventing the generation of a complete real-data simulation 
-scenario.
+\subsubsection{Random Trips}
+The random-trip approach generates synthetic train movements on the reconstructed railway network. Its objective is not 
+to reproduce a real timetable, but to test whether the generated infrastructure is connected and usable in SUMO.\@
 
-This issue does not necessarily indicate that the operational data is incorrect. Rather, it highlights limitations in the 
-current state of the reconstructed micro-level graph. Some connections required to reproduce real railway movements are 
-missing, incorrectly oriented, or not represented with sufficient topological consistency. Since the real-data simulation 
-requires complete paths between all consecutive stations of each train journey, even small connectivity gaps can prevent 
-an entire service from being simulated.
+Candidate departure and arrival locations are selected from valid station platforms. Weighting files are generated so 
+that SUMO’s \texttt{randomTrips.py} selects only railway platforms as origins and destinations. Intermediate tracks, 
+switches, and non-operational sections are excluded from the selection process. Additional parameters, such as insertion 
+rate, minimum trip distance, and simulation duration, are used to control the density and realism of the generated traffic.
 
-Despite this limitation, the real-data simulation workflow remains an important contribution of the implementation. It 
-defines the structure required to integrate operational railway data into the digital twin and identifies the main 
-technical obstacle that must be solved in future work. Improving the completeness of the dual graph, refining the 
-representation of switches and track directions, and strengthening the platform assignment strategy should make it 
-possible to execute real timetable-based simulations in a future version of the system.
+After trip generation, \texttt{duarouter} is used to compute executable routes through the SUMO network. This approach 
+provides a practical way to validate the micro-level infrastructure and verify whether trains can circulate through the 
+reconstructed network.
+
+\subsubsection{Real Data Trips}
+The real-data trip generation strategy aims to reproduce train movements from the punctuality dataset. The operational 
+records are first cleaned and grouped by train identifier and operating day. For each train, station records are sorted 
+according to the planned timetable in order to reconstruct an ordered sequence of stops.
+
+The main difficulty is that each movement between two consecutive stations must be mapped onto a valid path in the 
+detailed infrastructure. For this reason, each station must first be associated with one or more detected platforms. Then, 
+for every pair of consecutive stations, the dual graph is used to compute a path between the selected origin and 
+destination platforms.
+
+Conceptually, this approach is closer to real railway operations than random trip generation because it preserves the 
+structure of actual train services. However, in the current implementation, it did not produce a complete exploitable 
+simulation. Many consecutive station pairs could not be connected because no valid path was found in the generated dual 
+graph. As a result, majority of real train services had to be rejected before route generation.
+
+This issue is an important methodological finding. It shows that high infrastructure coverage is not sufficient to 
+guarantee simulation feasibility. At the micro level, the network must also be topologically consistent and routable. 
+Missing connections, incorrect orientations, or imperfect platform assignments can prevent a route from being 
+reconstructed even when the corresponding movement exists in the real railway network.
+
+\subsection{Simulation}
+Once the micro-level infrastructure and trips have been generated, the scenario can be executed in SUMO.\@ The simulation 
+uses detailed railway edges, train stops, route files, vehicle definitions, and configuration files.
+
+Two simulation scenarios are considered. The first one uses random trips. This scenario is mainly used to test the 
+generated network under controlled conditions and to verify that trains can be inserted, routed, and simulated on the 
+reconstructed infrastructure. It provides a useful validation step because it tests the physical connectivity of the 
+generated network without depending on the completeness of real operational routing.
+
+The second scenario attempts to use real-data trips reconstructed from the punctuality dataset. This scenario is more 
+realistic because it aims to reproduce observed railway operations. However, it is also more demanding because every train 
+service must be mapped onto valid platform-to-platform paths in the dual graph. In the current implementation, this 
+requirement could not always be satisfied, preventing the generation of a complete real-data-based micro-level simulation.
+
+The random-trip simulation therefore demonstrates that the generated infrastructure can support train movement in SUMO, 
+while the real-data simulation highlights the remaining difficulty of aligning real operational trajectories with a 
+detailed reconstructed infrastructure.
 
 \subsection{Limitations}
-The micro-level model offers a more detailed representation of the railway infrastructure, but this additional realism 
-also introduces several limitations. The quality of the simulation strongly depends on the completeness and correctness 
-of the reconstructed infrastructure graph. Missing connections, incorrect track orientations, imperfect switch detection, 
-or inaccurate platform assignments can prevent the computation of valid routes and may lead to unrealistic or incomplete 
-simulations.
+The micro-level model provides a more detailed representation of the railway infrastructure, but it is also more sensitive 
+to data quality and reconstruction errors. Missing connections, incorrect track orientations, imperfect switch detection, 
+or inaccurate platform assignments can prevent valid routes from being computed. These issues are less visible at the 
+macro level, but they become critical when trains must follow continuous physical paths through the network.
 
-A second limitation concerns the integration of real operational data. While random trips can be generated and simulated 
-more easily, the use of real train trajectories requires a continuous and valid path between every pair of consecutive 
-stations in the timetable. In the current implementation, this requirement could not always be satisfied, which prevented 
-the generation of a fully exploitable real-data simulation. These limitations are only introduced here briefly, as they 
-are discussed in more detail in the dedicated limitations chapter.
+The main limitation concerns the integration of real operational data. Random trips can be generated and simulated more 
+easily because they only require feasible routes between selected platforms. Real-data trips are more constrained because 
+each consecutive station pair in the timetable must correspond to a valid path in the dual graph. In the current 
+implementation, this condition was not always satisfied, which prevented the construction of a fully exploitable 
+real-data micro-level simulation.
+
+This limitation does not invalidate the micro-level approach. On the contrary, it reveals an important requirement for 
+railway digital twin construction: a detailed infrastructure model must be evaluated not only by the number of detected 
+elements, but also by its ability to support operational routing. The micro-level model therefore provides both a more 
+realistic infrastructure representation and a clear identification of the challenges that must be solved before 
+real-data-based detailed railway simulation can be achieved.
