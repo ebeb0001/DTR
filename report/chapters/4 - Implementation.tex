@@ -34,11 +34,11 @@ The output of this pipeline is a set of cleaned and harmonized datasets containi
 station-to-station links, and train circulation records. These datasets are then used to generate the SUMO network and the 
 corresponding train routes.
 
-% \begin{figure}[h]
-%     \centering
-%     % \includegraphics[width=0.8\textwidth]{figures/implementation/macro-level-data-processing-pipeline.png}
-%     \caption{Macro-Level Data Processing Pipeline}\label{fig:macro-level-data-processing-pipeline}
-% \end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/macro_pipeline.png}
+    \caption{Macro-Level Data Processing Pipeline}\label{fig:macro-level-data-processing-pipeline}
+\end{figure}
 
 
 \subsection{Railway Network Generation}
@@ -60,6 +60,49 @@ This representation is simple, robust, and easy to generate. However, because ea
 the model cannot reproduce internal station operations such as platform allocation, switch occupation, signal interactions, 
 or local route conflicts.
 
+\begin{algorithm}[htbp]
+\caption{Macro-level railway network generation}\label{alg:macro-network-generation}
+
+\KwInput{
+    Set of railway stations $S$;\\
+    Set of station-to-station connections $C$;\\
+    Set of stations selected by the user $S_{\mathrm{selected}}$.
+}
+
+\KwOutput{Generated SUMO network files.}
+
+Initialize an empty set of nodes $N \gets \emptyset$\;
+Initialize an empty set of edges $E \gets \emptyset$\;
+
+\ForEach{station $s \in S$}{
+    \If{$s \in S_{\mathrm{selected}}$ \textbf{or} $s$ is required to preserve network connectivity}{
+        Create a SUMO node using the identifier and coordinates of $s$\;
+        Add the generated node to $N$\;
+    }
+}
+
+\ForEach{connection $c \in C$}{
+    $s_{\mathrm{origin}} \gets c.\mathrm{departure\_station}$\;
+    $s_{\mathrm{destination}} \gets c.\mathrm{arrival\_station}$\;
+
+    \If{$s_{\mathrm{origin}} \in N$ \textbf{and}
+        $s_{\mathrm{destination}} \in N$}{
+        Create a SUMO edge from $s_{\mathrm{origin}}$ to
+        $s_{\mathrm{destination}}$\;
+        Assign the distance and railway geometry of $c$ to the edge\;
+        Add the generated edge to $E$\;
+    }
+}
+
+Export $N$ as a SUMO node file\;
+Export $E$ as a SUMO edge file\;
+Generate the additional SUMO files for railway stops and configuration\;
+Run \texttt{netconvert} to generate the final SUMO network\;
+
+\KwRet{Generated SUMO network files}\;
+
+\end{algorithm}
+
 
 \subsection{Trip Generation}
 Once the macro-level network has been generated, train movements are reconstructed from the punctuality dataset. 
@@ -80,6 +123,55 @@ simulation start date.
 This approach preserves realistic train movements, station usage patterns, and departure time distributions. It therefore 
 provides a more representative simulation scenario than purely random traffic generation, while remaining compatible with 
 the simplified station-to-station model.
+
+\begin{algorithm}[htbp]
+\caption{Macro-level trip reconstruction from operational data}\label{alg:macro-trip-reconstruction}
+
+\KwInput{
+    Punctuality dataset $P$;\\
+    Simulation start date $d_{\mathrm{start}}$;\\
+    Simulation duration $T_{\mathrm{simulation}}$.
+}
+
+\KwOutput{SUMO route file containing the reconstructed train routes.}
+
+Filter $P$ according to $d_{\mathrm{start}}$ and
+$T_{\mathrm{simulation}}$\;
+Remove incomplete or inconsistent records from $P$\;
+Initialize an empty set of train routes $\mathcal{R} \gets \emptyset$\;
+
+Group the records in $P$ by train identifier and operating day\;
+
+\ForEach{train group $G$}{
+    Sort the station records in $G$ by planned departure time\;
+    Initialize an empty route $R \gets \emptyset$\;
+
+    \ForEach{consecutive station pair $(s_i, s_j)$ in $G$}{
+        \If{$s_i$ and $s_j$ are connected in the macro-level network}{
+            \If{$R$ is empty}{
+                Add $s_i$ to $R$\;
+            }
+
+            Add $s_j$ to $R$\;
+        }
+    }
+
+    \If{$R$ contains a valid sequence of stations}{
+        Convert the first planned departure time into SUMO simulation time
+        $t_{\mathrm{departure}}$\;
+
+        Create a SUMO train route using $R$ and
+        $t_{\mathrm{departure}}$\;
+
+        Add the generated train route to $\mathcal{R}$\;
+    }
+}
+
+Export $\mathcal{R}$ as a SUMO route file\;
+
+\KwRet{Generated SUMO route file}\;
+
+\end{algorithm}
 
 \subsection{Simulation}
 After the network and routes have been generated, the macro-level scenario can be executed in SUMO.\@ The simulation 
@@ -172,18 +264,43 @@ The output of the pipeline consists of a detailed railway network containing tra
 platform-to-track associations, and routing structures. These elements are then exported into SUMO files and used to 
 generate train movements.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/micro_data_processing_pipeline.png}
+    \caption{Micro-Level Data Processing Pipeline}\label{fig:micro-level-data-processing-pipeline}
+\end{figure}
+
+
 \subsection{Infrastructure Modeling}
 \subsubsection{Switch Detection}
 Switch detection is based on the topology of the railway graph. Track extremities are represented as nodes, and track 
 sections are represented as edges. For each node, the number of connected track segments is computed.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/switch_detection_initial_setup.png}
+    \caption{Switch detection initial setup}
+\end{figure}
 
 Nodes connected to two track segments are considered part of a continuous railway line. Nodes connected to three or more 
 track segments are classified as switch-like elements because they represent branching or merging points in the 
 infrastructure. These detected switches are then used to enrich the micro-level network and support routing through the 
 reconstructed topology.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/switch_detection_detection_part.png}
+    \caption{Switch detection detection part}
+\end{figure}
+
 The resulting switch and edge datasets forms the foundation of the micro-level network model and is subsequently used for 
 graph construction, route generation, and simulation. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{chapters/images/switch_detection_final.png}
+    \caption{Switch detection final result}
+\end{figure}
 
 This approach does not require explicit switch labels in the source data. However, it depends strongly on the quality of 
 the reconstructed track topology. Missing, duplicated, or incorrectly connected track segments can affect the number of 

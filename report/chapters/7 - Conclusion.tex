@@ -1,137 +1,162 @@
 \chapter{Conclusion}\label{chap:conclusion}
-This thesis addressed the construction of a simulation-oriented digital twin for railway network simulation using SUMO and 
-heterogeneous railway datasets. The objective was not to develop a complete operational digital twin, but rather to study 
-the foundations required to transform infrastructure and operational data into simulation-ready railway models.
+This thesis investigated the construction of a simulation-oriented digital twin for railway network simulation using SUMO 
+and heterogeneous railway datasets. The objective was not to build a complete real-time digital twin, but to study the 
+foundations required to transform infrastructure and operational data into executable simulation models.
 
-The work focused on two complementary levels of representation. The macro-level model represents stations as nodes and 
-railway connections as edges, while the micro-level model represents infrastructure elements such as tracks, platforms, 
-switches, and operational segments. This distinction made it possible to evaluate the trade-off between abstraction, 
-scalability, realism, and simulation feasibility.
+The work was structured around two complementary levels of representation. The macro-level model represents the railway 
+network as a station-to-station graph and focuses on the integration of real operational data. The micro-level model 
+represents the infrastructure in more detail through tracks, platforms, switches, and routing structures. Together, these 
+two approaches make it possible to evaluate the trade-off between simplicity, scalability, infrastructure realism, and 
+simulation feasibility.
 
 \section{Summary of Contributions}
-The first contribution of this thesis is the design and implementation of a complete data-driven pipeline for railway 
-simulation generation. This pipeline includes data preprocessing, network generation, trip generation, simulation 
-execution, and output analysis. It provides a structured methodology for converting railway datasets into SUMO-compatible 
-simulation artefacts.
+The first contribution of this thesis is the design and implementation of a data processing pipeline able to transform 
+railway datasets into SUMO-compatible artefacts. This includes the extraction and preprocessing of infrastructure and 
+operational data, the generation of simulation networks, the construction of train routes, and the conversion of simulation 
+outputs into analysable datasets.
 
-The second contribution is the development of a macro-level railway model. This model provides a simplified but 
-functional representation of the railway network and allows real operational data to be integrated into simulation 
-scenarios. It validates the complete workflow from punctuality data processing to SUMO simulation.
+The second contribution is the development of a macro-level railway simulation model. This model abstracts the railway 
+network as stations connected by railway links. Although simplified, it enables the integration of real punctuality data 
+and validates the complete workflow from raw data to simulation execution.
 
-The third contribution is the development of a micro-level railway model. This model reconstructs the railway 
-infrastructure in greater detail by representing tracks, switches, platforms, and segmented track sections. It also 
-introduces routing structures, such as the dual graph, that support path computation inside the detailed infrastructure.
+The third contribution is the development of a micro-level railway infrastructure model. This model introduces more 
+detailed infrastructure processing steps, including switch detection, platform matching, track segmentation, and dual graph 
+construction. It provides a richer representation of the railway network and makes it possible to test train circulation 
+on a more detailed infrastructure.
 
-Finally, this thesis contributes by identifying the main technical challenges involved in railway digital twin 
-construction. These challenges include data quality, infrastructure completeness, platform matching, route reconstruction, 
-SUMO-specific constraints, and computational scalability.
+Finally, this work contributes by identifying the main technical challenges involved in building railway digital twins from 
+real-world data. These challenges include data alignment, infrastructure completeness, platform assignment, route 
+reconstruction, SUMO-specific constraints, and computational scalability.
 
 \section{Key Findings}
-The results show that a railway simulation-oriented digital twin can be constructed progressively by combining different 
-levels of abstraction. The macro-level model proved to be more robust for integrating real operational data, since train 
-movements can be represented as station-to-station trajectories. This makes it suitable for validating the overall 
-pipeline and for running simulations on selected parts of the network.
+Regarding \textbf{RQ1}, the results show that heterogeneous railway infrastructure and operational datasets can be 
+transformed into SUMO-compatible simulation components through a structured pipeline. The generated datasets provide a 
+strong basis for simulation, especially at the station and platform level.
 
-The micro-level model provides a more realistic infrastructure representation, but it also introduces greater complexity. 
-Although the generated infrastructure reaches high coverage and can support synthetic train movements, real-data-based 
-simulation remains difficult. The main issue is that real train trajectories require valid and continuous paths between 
-all consecutive stations, which is not always guaranteed in the reconstructed micro-level graph.
+Regarding \textbf{RQ2}, the macro-level model proved to be the most robust representation for integrating real operational 
+data. Since train movements can be reconstructed as station-to-station trajectories, the macro model supports real-data 
+simulation on selected chains of stations. It therefore provides an effective first validation of the digital twin 
+workflow.
 
-The results also highlight that high dataset coverage does not automatically ensure operational correctness. A station, 
-platform, or track may be detected, but still be insufficiently aligned with the routing requirements of a real railway 
-service. Therefore, railway digital twin construction requires not only good data coverage, but also topological 
-consistency and operational validity.
+Regarding \textbf{RQ3}, the micro-level model shows that detailed infrastructure reconstruction is feasible and useful. The 
+generated network can represent tracks, switches, platforms, and segmented railway sections. Random-trip simulations 
+confirm that the infrastructure can support train circulation in SUMO.\@
 
-Overall, the main finding is that macro-level and micro-level models are complementary. The macro-level model is better 
-suited for robust and scalable simulation based on real train movements, while the micro-level model provides a foundation 
-for more detailed infrastructure analysis.
+Regarding \textbf{RQ4}, the main limitation appears when real operational data is integrated into the micro-level model. 
+Real train services require continuous and valid paths between consecutive stations. In the current implementation, this 
+condition is not always satisfied because the reconstructed dual graph does not always provide valid paths between station 
+pairs. This result is important because it shows that high dataset coverage does not necessarily imply operational 
+validity. A railway digital twin must therefore be evaluated not only by the number of reconstructed elements, but also by 
+its ability to support realistic train routes.
+
+Overall, the main finding is that macro-level and micro-level models are complementary. The macro-level model is more 
+robust and scalable for real-data simulation, while the micro-level model provides a richer basis for detailed 
+infrastructure analysis but requires stronger topological consistency.
 
 \section{Practical Implications}
-This work shows that existing railway data can be transformed into executable simulation models through a structured 
-processing pipeline. This is useful for researchers and railway stakeholders who want to analyse railway operations 
-without manually constructing simulation networks.
+The proposed framework shows that existing railway data can be transformed into executable simulation scenarios without 
+manually building the entire network. This is relevant for researchers and railway stakeholders interested in 
+simulation-based analysis, data integration, or early-stage digital twin development.
 
-The macro-level model can serve as a practical tool for preliminary traffic analysis, selected line simulation, and 
-validation of operational data integration. Its simplified structure makes it easier to use and more robust when detailed 
-infrastructure data is not required.
+The macro-level model can be used for preliminary traffic analysis, selected line simulation, and validation of operational 
+data integration. Its simplified structure makes it easier to execute and less sensitive to missing detailed infrastructure 
+information.
 
-The micro-level model, although still limited for real-data simulation, provides a basis for more detailed studies of 
-railway infrastructure. With further improvements, it could support analyses related to platforms, switches, local 
-bottlenecks, routing conflicts, and infrastructure capacity.
+The micro-level model is more limited in its current form, but it provides a foundation for future analyses involving 
+platforms, switches, local bottlenecks, routing conflicts, and infrastructure capacity. Its main value lies in showing 
+where the transition from a structural infrastructure model to an operational simulation model becomes difficult.
 
-The work also shows that SUMO can be used as a flexible platform for railway digital twin prototyping. However, 
-railway-specific elements such as signaling, interlocking, dispatching, and precise platform assignment require additional 
-modeling beyond the standard SUMO workflow.
+The work also confirms that SUMO can be used as a flexible platform for railway digital twin prototyping. However, several 
+railway-specific elements, such as signalling, interlocking, dispatching, platform allocation, and conflict management, 
+require additional modelling beyond the standard SUMO workflow.
 
 \section{Future directions}
-The work presented in this thesis provides a first implementation of a railway digital twin based on real infrastructure 
-and operational data. However, several extensions could be considered in order to transform the current framework into a 
-more complete decision-support tool.
+The work presented in this thesis provides a first implementation of a railway digital twin pipeline based on real 
+infrastructure and operational data. Future work should focus both on improving the existing implementation and on 
+extending the framework toward more advanced decision-support functionalities.
+
+\subsection{Improving Pathfinding and Micro-Level Routing}
+The first priority is to improve the micro-level pathfinding process. The current implementation relies on a dual graph 
+representation, where track segments are treated as graph nodes and transitions between tracks define the possible 
+movements. This approach is useful, but the results show that it is not sufficient in its current form to reconstruct real 
+train services reliably.
+
+Future work should therefore investigate alternative or complementary routing methods. One possibility would be to 
+construct a directed infrastructure graph closer to SUMO’s internal edge representation and perform pathfinding directly on 
+this graph. Another possibility would be to combine the dual graph with additional validation rules based on track 
+direction, switch connectivity, platform accessibility, and known station-to-station connections. A hybrid routing strategy 
+could also be considered, where macro-level paths are first used to constrain the search space before computing detailed 
+micro-level routes.
+
+Improving this part of the code would also require better diagnostics. Instead of only detecting that no path exists, the 
+pipeline should identify why the path failed: missing edge, wrong direction, disconnected platform, switch inconsistency, 
+or incomplete station mapping. This would make debugging easier and would help transform routing failures into actionable 
+information.
+
+\subsection{Improving Existing Code Structure}
+Another important direction concerns the maintainability of the implementation. The current code validates the main 
+concepts of the thesis, but future versions should make the pipeline more modular. Data extraction, preprocessing, network 
+generation, platform matching, routing, trip generation, simulation execution, and output analysis could be separated into 
+independent modules with clearer interfaces.
+
+This would make the framework easier to test, extend, and reuse. It would also allow each component to be evaluated 
+independently. For example, platform matching could be tested without running a full simulation, and routing algorithms 
+could be compared on the same infrastructure graph. Adding automated validation tests would also help detect regressions 
+when modifying the pipeline.
 
 \subsection{Counterfactual Simulation and What-If Scenarios}
-A first direction concerns counterfactual simulation and what-if scenarios. The current framework mainly reproduces 
-existing infrastructure and train movements. A future extension could allow users to modify parts of the system and 
-observe the effect of these changes on railway traffic.
+A further direction concerns counterfactual simulation and what-if scenarios. The current framework mainly reproduces 
+existing infrastructure and train movements. A future version could allow users to modify parts of the network and observe 
+the impact of these changes on railway traffic.
 
 For example, it could be possible to simulate the closure of a station, the removal of a track section, a modification of 
 train frequency, or a change in departure times. At the macro level, this could be implemented by modifying 
-station-to-station connections. At the micro level, it could be implemented by making specific platforms, switches, or 
-track segments unavailable.
-
-This would make the digital twin useful as an exploratory tool for testing operational decisions before applying them to 
-the real network.
+station-to-station connections. At the micro level, specific platforms, switches, or track segments could be made 
+unavailable. This would make the digital twin useful as an exploratory tool for testing operational decisions before 
+applying them to the real network.
 
 \subsection{Tracks Works Planning}
-A second direction concerns track works planning. Maintenance operations often require temporary closures, 
-reduced capacity, speed restrictions, or rerouting. A simulation-based digital twin could help evaluate the impact of 
-these interventions before they take place.
+Track works planning is another promising extension. Maintenance operations often require temporary closures, reduced 
+capacity, speed restrictions, or rerouting. A simulation-based digital twin could help evaluate the impact of these 
+interventions before they take place.
 
 In the current framework, this could be implemented by adding availability constraints to infrastructure elements. At the 
-macro level, railway connections could be removed or penalized. At the micro level, specific tracks, platforms, or 
-switches could be marked as unavailable during a given time window.
-
-This extension would help compare maintenance strategies, identify bottlenecks, and reduce the impact of planned works on 
-train operations.
+macro level, railway connections could be removed or penalized. At the micro level, specific tracks, platforms, or switches 
+could be marked as unavailable during a given time window. This would help compare maintenance strategies, identify 
+bottlenecks, and reduce the operational impact of planned works.
 
 \subsection{Real-Time Forecasting and Incident Propagation}
-A third direction is the integration of real-time forecasting and incident propagation. The current implementation is 
-mainly based on historical and static datasets. A future version could integrate live or near-real-time information, such 
-as train delays or incidents, and use it to predict the future state of the network.
+Another future direction is the integration of real-time forecasting and incident propagation. The current implementation 
+is mainly based on historical and static data. A future version could integrate live or near-real-time information, such as 
+train delays or incidents, and use it to estimate the future state of the network.
 
-This could be implemented by combining the simulation pipeline with statistical or machine learning models trained on 
-punctuality data. The macro-level model could be used to study delay propagation between stations, while the micro-level 
-model could help analyse the role of local infrastructure constraints.
-
-Such an extension would make the digital twin useful for operational monitoring and proactive traffic management.
+This extension could combine the simulation pipeline with statistical or machine learning models trained on punctuality 
+data. The macro-level model could be used to study delay propagation between stations, while the micro-level model could 
+help analyse the influence of local infrastructure constraints. Such an extension would move the framework closer to an 
+operational digital twin for monitoring and proactive traffic management.
 
 \subsection{Framework Generalization}
 A final direction concerns the generalization of the framework. The current implementation is adapted to the Belgian 
 railway datasets used in this thesis. A more general version should separate the core modeling logic from dataset-specific 
-processing steps.
+preprocessing steps.
 
-This could be achieved by introducing modular data adapters that transform different railway datasets into a common 
-internal representation. Depending on the available data, the framework could then generate a macro-level model, a 
-micro-level model, or a hybrid representation.
-
-This would increase the reproducibility of the approach and make it easier to apply the methodology to other railway 
-networks.
+This could be achieved by introducing modular data adapters that convert different railway datasets into a common internal 
+representation. Depending on the available data, the framework could then generate a macro-level model, a micro-level 
+model, or a hybrid representation. This would make the approach easier to transfer to other railway networks and would 
+improve its long-term usability.
 
 \section{Final Remarks}
-This thesis has shown that constructing a railway digital twin simulation is an incremental process. Before advanced 
-capabilities such as real-time prediction or decision support can be achieved, it is necessary to build reliable 
-simulation models from available infrastructure and operational data.
+This thesis shows that building a railway digital twin is not only a simulation problem, but also a data integration and 
+infrastructure modelling problem. The results demonstrate that a complete pipeline can be constructed from real railway 
+datasets and executed in SUMO, especially at the macro level. They also show that moving toward a detailed micro-level 
+representation introduces new challenges, particularly in route reconstruction and topological consistency.
 
-The proposed macro-level and micro-level approaches demonstrate two complementary ways of addressing this challenge. The 
-macro-level model provides a robust and scalable representation for integrating real train movements, while the micro-level 
-model provides a more detailed infrastructure representation and highlights the challenges of realistic route 
-reconstruction.
+The most important lesson of this work is that infrastructure coverage alone is not sufficient. A generated railway network 
+must also be operationally usable: platforms must be reachable, track directions must be coherent, switches must preserve 
+connectivity, and real train paths must be routable. The failure of the real-data micro-level simulation is therefore not 
+only a limitation, but also a valuable finding. It identifies the next technical obstacle to solve in order to move from a 
+structural digital representation toward a more complete operational railway digital twin.
 
-The main conclusion of this work is that railway digital twin development requires a balance between simplicity and 
-realism. A simplified model is easier to simulate and more robust, but cannot represent detailed operational constraints. 
-A detailed model is more realistic, but depends more strongly on data completeness and topological correctness.
-
-Although the current implementation is not yet a complete operational railway digital twin, it provides a solid foundation 
-for future work. It demonstrates that railway data can be transformed into SUMO-compatible simulation artefacts, that 
-real-data macro-level simulation is feasible, and that micro-level infrastructure reconstruction can support synthetic 
-railway traffic. Future improvements should focus on route reconstruction, infrastructure consistency, railway-specific 
-operational constraints, and the integration of predictive or real-time data.
+Overall, this work provides a first foundation for simulation-oriented railway digital twin development. It validates the 
+feasibility of the macro-level approach, demonstrates the potential of the micro-level approach, and identifies the 
+improvements required to make future versions more realistic, robust, and useful for railway analysis.
