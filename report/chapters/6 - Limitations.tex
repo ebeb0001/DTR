@@ -59,6 +59,8 @@ necessary to obtain a simulation-ready network, but they also transform the orig
 model should therefore be understood as an operational approximation of the railway infrastructure, not as a perfect 
 reproduction of the real network.
 
+\newpage
+
 \section{Route Reconstruction and Micro-Level Simulation}
 The most important limitation of the current implementation concerns route reconstruction at the micro level. The 
 macro-level model can integrate real operational data because train journeys are reconstructed as sequences of stations. In 
@@ -95,6 +97,8 @@ In particular, detailed signalling, interlocking, dispatching, block occupation,
 resolution are not fully modelled in the current implementation. This affects the realism of the simulation, especially at 
 the micro level. Random trips can be routed and executed in SUMO, but they do not necessarily respect the temporal 
 structure, operational priorities, or safety constraints of real railway traffic.
+
+\newpage
 
 SUMO-related warnings or execution issues must therefore be interpreted carefully. Some problems may come from the generated infrastructure, 
 while others may result from unrealistic traffic demand, missing railway-specific control logic, or simplified operational 
