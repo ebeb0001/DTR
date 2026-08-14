@@ -31,6 +31,8 @@ association in the micro-level model.
     \caption{Station coverage for macro-level and micro-level simulations}\label{tab:station_coverage}
 \end{table}
 
+\newpage
+
 The results show that station coverage is almost complete for both modeling approaches. The macro-level model preserves 
 all stations from the reference dataset, while the micro-level model misses only one station. This confirms that both 
 generated datasets provide a reliable station basis for the subsequent infrastructure modeling and simulation steps.
@@ -103,7 +105,7 @@ number of switches available in the reference dataset.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.6\textwidth]{chapters/images/switch_detection_after.png}
+    \includegraphics[width=0.4\textwidth]{chapters/images/switch_detection_after.png}
     \caption{Network before and after switch detection (Green dots represent detected switches with 3 connections and 
     Red dots represent detected switches with 4 or more connections)}\label{fig:switch_detection_after}
 \end{figure}
@@ -113,9 +115,9 @@ micro-level infrastructure by making branching points explicit and by improving 
 In dense areas, such as Bruxelles-Midi, the method provides a more detailed description of the railway topology, while 
 also showing the difficulty of matching generated topological elements exactly with reference infrastructure objects.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{chapters/images/platform_matching_result.png}
+    \includegraphics[width=0.4\textwidth]{chapters/images/platform_matching_result.png}
     \caption{Platform matching result on Bruxelles-Midi}\label{fig:platform_matching}
 \end{figure}
 
@@ -126,8 +128,10 @@ quality depends on the local station configuration.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.6\textwidth]{chapters/images/platform_detection_quality.png}
-    \caption{Platform matching quality map}\label{fig:platform_matching_quality}
+    \includegraphics[width=0.3\textwidth]{chapters/images/platform_detection_quality.png}
+    \hfill
+    \includegraphics[width=0.6\textwidth]{chapters/images/platform_quality_example.png}
+    \caption{Platform matching quality map with examples}\label{fig:platform_matching_quality}
 \end{figure}
 
 The platform matching quality examples illustrate this variability. Some stations, such as Tubize, show good-quality 
@@ -136,16 +140,18 @@ intermediate cases where the match remains usable but less precise. More difficu
 algorithm can fail when the search area is larger or when the surrounding track configuration does not provide a clear 
 candidate.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.6\textwidth]{chapters/images/platform_quality_example.png}
-    \caption{Platform matching quality examples}\label{fig:platform_matching_examples}
-\end{figure}
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.6\textwidth]{chapters/images/platform_quality_example.png}
+%     \caption{Platform matching quality examples}\label{fig:platform_matching_examples}
+% \end{figure}
 
 Overall, the infrastructure modeling results confirm the value of the micro-level approach. Switch detection and platform 
 matching make it possible to transform raw infrastructure data into simulation artefacts. However, these results also show 
 that high coverage does not automatically guarantee perfect operational correctness. Local topology, platform-track 
 association, and route feasibility must still be evaluated through simulation.
+
+\newpage
 
 \section{Simulation Results}
 This section evaluates whether the generated railway models can be executed in SUMO.\@ The macro-level simulation is 
@@ -194,6 +200,8 @@ execution.
 %     \caption{Time-space diagram of the macro-level simulation}\label{fig:macro_simulation_result}
 % \end{figure}
 
+\newpage
+
 The result shows that all generated routes were successfully simulated. This confirms that the macro-level model is 
 suitable for integrating real operational data when the selected network area remains compatible with the assumptions of 
 the model. However, this result should be interpreted as a validation of station-to-station circulation, not as a complete 
@@ -207,7 +215,7 @@ paths in the reconstructed dual graph. For this reason, the result presented her
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.6\textwidth]{chapters/images/micro_sim.png}
+    \includegraphics[width=0.4\textwidth]{chapters/images/micro_sim.png}
     \caption{SUMO-GUI screenshot of the micro-level random trip simulation}\label{fig:micro_simulation_result}
 \end{figure}
 
@@ -240,6 +248,8 @@ the SUMO network.
 %     % \includegraphics[width=0.6\textwidth]{chapters/images/micro_simulation_result.png}
 %     \caption{Examples of routed random trips on the micro-level network}\label{fig:micro_simulation_result}  
 % \end{figure}
+
+\newpage
 
 The fact that all 16802 generated trips were successfully routed confirms that the reconstructed micro-level network is 
 usable by SUMO for route computation. This is an important technical result, since it shows that the generated 
@@ -283,41 +293,85 @@ processing, station-to-station network generation, trip generation from operatio
 The micro-level pipeline includes additional steps such as switch detection, platform detection, track segmentation, 
 detailed network generation, and random trip generation.
 
-\begin{table}[h]
-    \centering
-    \begin{tabular}{lc}
-        \toprule
-        Pipeline Step & Execution Time (s) \cr
-        \midrule
-        ETL  & 330.92 \cr
-        Network generation & 0.12 \cr
-        Trip generation & 15.08 \cr
-        Additional file generation & 0.0058 \cr
-        Configuration generation & 0.0000 \cr
-        Total & 331.0458 \cr
-        \bottomrule
-    \end{tabular}
-    \caption{Execution time of the macro-level generation pipeline for the example network}\label{tab:pipeline_performance_macro}
-\end{table}
+% \begin{table}[h]
+%     \centering
+%     \begin{tabular}{lc}
+%         \toprule
+%         Pipeline Step & Execution Time (s) \cr
+%         \midrule
+%         ETL  & 330.92 \cr
+%         Network generation & 0.12 \cr
+%         Trip generation & 15.08 \cr
+%         Additional file generation & 0.0058 \cr
+%         Configuration generation & 0.0000 \cr
+%         Total & 331.0458 \cr
+%         \bottomrule
+%     \end{tabular}
+%     \caption{Execution time of the macro-level generation pipeline for the example network}\label{tab:pipeline_performance_macro}
+% \end{table}
 
-\begin{table}[h]
+% \begin{table}[h]
+%     \centering
+%     \begin{tabular}{lc}
+%         \toprule
+%         Pipeline Step & Execution Time (s) \cr
+%         \midrule
+%         ETL & 344.09 \cr
+%         Switch detection & 1.50 \cr
+%         Platform Detection & 19.07 \cr
+%         Track segementation & 81.90 \cr
+%         Network generation & 160.37 \cr
+%         Trip generation & 168.30 \cr
+%         Additional file generation & 0.02 \cr
+%         Configuration generation & 0.00 \cr
+%         Total & 775.25 \cr
+%         \bottomrule
+%     \end{tabular}
+%     \caption{Execution time of the micro-level generation pipeline with random trip generation}\label{tab:pipeline_performance_micro}
+% \end{table}
+
+\begin{table}[H]
     \centering
-    \begin{tabular}{lc}
-        \toprule
-        Pipeline Step & Execution Time (s) \cr
-        \midrule
-        ETL & 344.09 \cr
-        Switch detection & 1.50 \cr
-        Platform Detection & 19.07 \cr
-        Track segementation & 81.90 \cr
-        Network generation & 160.37 \cr
-        Trip generation & 168.30 \cr
-        Additional file generation & 0.02 \cr
-        Configuration generation & 0.00 \cr
-        Total & 775.25 \cr
-        \bottomrule
-    \end{tabular}
-    \caption{Execution time of the micro-level generation pipeline with random trip generation}\label{tab:pipeline_performance_micro}
+    % Premier tableau
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \small
+        \begin{tabular}{lc}
+            \toprule
+            Pipeline Step & Execution Time (s) \\
+            \midrule
+            ETL & 330.92 \\
+            Network generation & 0.12 \\
+            Trip generation & 15.08 \\
+            Additional file generation & 0.0058 \\
+            Configuration generation & 0.0000 \\
+            Total & 331.0458 \\
+            \bottomrule
+        \end{tabular}
+        \caption{Execution time of the macro-level generation pipeline for the example network}\label{tab:pipeline_performance_macro}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \small
+        \begin{tabular}{lc}
+            \toprule
+            Pipeline Step & Execution Time (s) \\
+            \midrule
+            ETL & 344.09 \\
+            Switch detection & 1.50 \\
+            Platform Detection & 19.07 \\
+            Track segmentation & 81.90 \\
+            Network generation & 160.37 \\
+            Trip generation & 168.30 \\
+            Additional file generation & 0.02 \\
+            Configuration generation & 0.00 \\
+            Total & 775.25 \\
+            \bottomrule
+        \end{tabular}
+        \caption{Execution time of the micro-level generation pipeline with random trip generation}\label{tab:pipeline_performance_micro}
+    \end{minipage}
+
 \end{table}
 
 % \begin{figure}[h]
