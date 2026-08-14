@@ -30,6 +30,8 @@ subset of stations to simulate, and neighbouring stations required to preserve c
 This makes it possible to focus on coherent station chains rather than the entire national network, which reduces 
 complexity while preserving meaningful train movements.
 
+\newpage
+
 The output of this pipeline is a set of cleaned and harmonized datasets containing station information, 
 station-to-station links, and train circulation records. These datasets are then used to generate the SUMO network and the 
 corresponding train routes.
@@ -60,7 +62,7 @@ This representation is simple, robust, and easy to generate. However, because ea
 the model cannot reproduce internal station operations such as platform allocation, switch occupation, signal interactions, 
 or local route conflicts.
 
-\begin{algorithm}[htbp]
+\begin{algorithm}[h]
 \caption{Macro-level railway network generation}\label{alg:macro-network-generation}
 
 \KwInput{
@@ -124,7 +126,7 @@ This approach preserves realistic train movements, station usage patterns, and d
 provides a more representative simulation scenario than purely random traffic generation, while remaining compatible with 
 the simplified station-to-station model.
 
-\begin{algorithm}[htbp]
+\begin{algorithm}[h]
 \caption{Macro-level trip reconstruction from operational data}\label{alg:macro-trip-reconstruction}
 
 \KwInput{
@@ -200,6 +202,8 @@ Once the network, train routes, stop definitions, and simulation configuration f
 can be launched directly in SUMO.\@ During execution, trains circulate along the station-to-station graph according to 
 the reconstructed routes and departure times. Since detailed infrastructure is not represented, train movements are mainly 
 governed by the generated routes, travel times, and SUMO’s internal simulation rules.
+
+\newpage
 
 Several outputs are produced by the simulation. The \texttt{tripinfo} file provides information about completed train 
 journeys, the \texttt{stopinfo} file records stopping events at stations, and \texttt{summary} outputs describe the 
@@ -281,6 +285,8 @@ sections are represented as edges. For each node, the number of connected track 
     \includegraphics[width=0.6\textwidth]{chapters/images/switch_detection_initial_setup.png}
     \caption{Switch detection initial setup}
 \end{figure}
+
+\newpage
 
 Nodes connected to two track segments are considered part of a continuous railway line. Nodes connected to three or more 
 track segments are classified as switch-like elements because they represent branching or merging points in the 
@@ -453,6 +459,8 @@ infrastructure.
 \subsection{Trip Generation}
 Trip generation defines the train movements executed in the micro-level simulation. 
 Two strategies are considered: random trip generation and real-data-based trip generation.
+
+\newpage
 
 \subsubsection{Random Trips}
 The random-trip approach generates synthetic train movements on the reconstructed railway network. Its objective is not 
