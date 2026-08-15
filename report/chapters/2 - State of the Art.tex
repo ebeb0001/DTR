@@ -268,8 +268,6 @@ wrong location or may not be able to reach the stop at all.
     \caption{Example of a station layout}\label{fig:railway_station_layout}
 \end{figure}
 
-\newpage
-
 Stations also influence capacity. Dwell time, platform availability, route conflicts at station throats, and the number of 
 available tracks determine how many trains can be handled within a given period. Large stations may become bottlenecks 
 even if the lines around them have sufficient capacity. For this reason, station modelling is a key component of realistic 
@@ -391,8 +389,6 @@ than a line where fast, slow, passenger, and freight trains are mixed. This is b
 need for headways, overtaking, and timetable margins. Similarly, a station with limited platforms or conflicting access 
 routes may reduce capacity even if the surrounding tracks are not saturated.
 
-\newpage
-
 The UIC 406 method is often used as a reference approach for railway capacity analysis. It evaluates capacity consumption 
 by compressing train paths in a timetable and analysing how much time is occupied by train movements. This approach 
 highlights that capacity is related not only to the number of trains, but also to their ordering, spacing, speed 
@@ -497,8 +493,6 @@ Infrastructure data describes what exists in the network, while operational data
 simulation-oriented digital twin must combine both: infrastructure data is required to build the network, and operational 
 data is required to generate train movements and validate the behaviour of the simulation.
 
-\newpage
-
 \subsubsection{Infrastructure Data}
 Infrastructure data includes information about tracks, switches, stations, platforms, signals, speed limits, 
 electrification, geometry, and topology. Depending on the source, this data may be available as geospatial data, tabular 
@@ -524,6 +518,8 @@ provide structured ways to describe infrastructure, rolling stock, timetables, a
 They improve interoperability between tools, but converting raw datasets into such formats can require significant 
 modelling effort.
 
+\newpage
+
 \subsubsection{Operational Data}
 Operational data describes the planned or actual movement of trains. It may include timetables, train identifiers, station 
 stops, arrival and departure times, delays, platform assignments, rolling stock information, and disruption records. 
@@ -538,8 +534,6 @@ Operational data is often difficult to use directly. It may contain missing reco
 cancelled trains, duplicated entries, or timing errors. It may also describe movements at station level, while the 
 simulation requires detailed paths at track level. Therefore, cleaning and transformation are necessary before operational 
 data can be used in a simulator.
-
-\newpage
 
 A key challenge is the alignment between operational data and infrastructure data. A train record may indicate that a 
 train travelled from one station to another, but the infrastructure model must contain a valid path between these 
@@ -717,6 +711,8 @@ careful configuration. Simpler models are easier to generate and scale, but they
 This creates a trade-off between macroscopic representations, which are easier to use with large datasets, and microscopic 
 representations, which are more realistic but more sensitive to data quality and topological inconsistencies.
 
+\newpage
+
 A third limitation concerns reproducibility and openness. Some railway simulation tools are commercial or rely on 
 proprietary workflows. This can be appropriate for industrial applications, but it may limit academic reproducibility. 
 Open-source tools such as SUMO and OSRD reduce this barrier, but they still require significant preprocessing and modelling 
@@ -802,6 +798,8 @@ lanes, and schedules can be defined through departure times and planned stops. S
 transport lines, rail signals, crossings, and bidirectional track usage in certain modelling 
 configurations~\cite{sumo_docs, sumo_railways}.
 
+\newpage
+
 For railway use cases, SUMO offers two important advantages. First, it can represent the network at different levels of 
 abstraction. At the macro level, stations can be represented as nodes and station-to-station links as rail edges. At the 
 micro level, individual track segments, platforms, and switches can be represented more explicitly. Second, SUMO supports 
@@ -813,8 +811,6 @@ assignment, block occupation, and conflict resolution are not automatically infe
 must either be simplified, explicitly encoded, or controlled through additional logic. Therefore, SUMO is well suited for 
 building a flexible simulation-oriented digital twin foundation, but it does not remove the need for careful railway 
 modelling.
-
-\newpage
 
 In this thesis, SUMO is used as a simulation backend rather than as a complete railway planning system. The main objective 
 is to evaluate whether heterogeneous infrastructure and operational datasets can be transformed into executable railway 
