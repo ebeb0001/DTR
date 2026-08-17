@@ -401,27 +401,27 @@ complementary levels of representation. The macro-level model provides a simplif
 real operational data into SUMO, while the micro-level model provides a more detailed infrastructure representation based 
 on tracks, platforms, switches, and segmented railway sections.
 
-\paragraph{\textbf{RQ1}} the results confirm that heterogeneous infrastructure and operational datasets can be transformed 
+\paragraph{\textbf{RQ1}} The results confirm that heterogeneous infrastructure and operational datasets can be transformed 
 into SUMO-compatible simulation artefacts. The generated datasets reach high coverage for stations, platforms, and tracks, 
 showing that the preprocessing and reconstruction pipeline is able to preserve most of the available railway information. 
 However, the results also show that coverage metrics must be interpreted carefully. In particular, the micro-level track 
 coverage above 100\% reflects the transformation of reference tracks into simulation-ready segments, rather than a direct 
 one-to-one reproduction of the original data.
 
-\paragraph{\textbf{RQ2}} the macro-level model validates the integration of real operational data into simulation. Train 
+\paragraph{\textbf{RQ2}} The macro-level model validates the integration of real operational data into simulation. Train 
 movements reconstructed from punctuality records were successfully converted into SUMO routes and simulated on a selected 
 station chain. This confirms that the station-to-station abstraction is suitable for building a robust end-to-end workflow 
 from real data. Its main limitation is that it cannot represent detailed infrastructure constraints such as platform 
 occupation, switch usage, internal station routing, or local conflicts.
 
-\paragraph{\textbf{RQ3}} the micro-level model shows that a more detailed infrastructure-based simulation is feasible, but 
+\paragraph{\textbf{RQ3}} The micro-level model shows that a more detailed infrastructure-based simulation is feasible, but 
 more difficult to exploit operationally. The random-trip simulation confirms that the reconstructed network can be used by 
 SUMO for route computation and train circulation. However, the difference between the number of routed trips and completed 
 trips shows that routing feasibility alone is not sufficient to obtain a stable and realistic railway simulation. Random 
 trips are useful to test connectivity, but they do not reproduce the temporal and operational constraints of a real 
 timetable.
 
-\paragraph{\textbf{RQ4}} the main failure point appears in the integration of real operational data at the micro level. 
+\paragraph{\textbf{RQ4}} The main failure point appears in the integration of real operational data at the micro level. 
 Unlike random trips, real-data trips require each consecutive station pair in a train journey to correspond to a valid path 
 in the reconstructed dual graph. In the current implementation, this condition was not satisfied for enough services to 
 produce a fully exploitable real-data micro-level simulation. This issue is an important result of the thesis: it shows 
