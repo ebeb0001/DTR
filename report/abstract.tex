@@ -1,0 +1,32 @@
+\chapter*{Abstract}
+Railway networks are complex systems in which infrastructure, train movements, timetables, operational constraints, and 
+disruptions interact continuously. In this context, digital twins offer a promising framework for representing, 
+simulating, and analysing railway systems. However, constructing a simulation-oriented railway digital twin from 
+real-world data remains difficult, mainly because infrastructure and operational datasets are heterogeneous, incomplete, 
+and represented at different levels of detail.
+
+This thesis investigates the construction of a railway digital twin prototype for railway network simulation using 
+SUMO.\@ The objective is not to build a complete real-time digital twin, but to study how railway infrastructure and 
+operational data can be transformed into simulation-ready artefacts. The work proposes a data-driven pipeline that 
+processes railway datasets, generates SUMO-compatible networks, reconstructs train trips, executes simulations, and 
+analyses the resulting outputs.
+
+Two complementary modelling levels are developed and compared. The macro-level model represents the railway network as a 
+station-to-station graph, where stations are modelled as nodes and railway connections as edges. This abstraction enables 
+the integration of real punctuality data and supports the reconstruction of train movements on selected parts of the 
+network. The micro-level model represents the infrastructure in greater detail through tracks, platforms, switches, 
+segmented track sections, and routing structures. This second representation aims to move closer to the physical railway 
+infrastructure and to evaluate whether more realistic train simulations can be generated from the available data.
+
+The results show that the proposed pipeline can generate coherent simulation artefacts and that the macro-level model 
+provides a robust basis for integrating real operational data into SUMO.\@ The micro-level model successfully reconstructs 
+a large part of the infrastructure and supports random-trip simulations, but the integration of real operational data 
+remains limited. In particular, the reconstruction of valid paths through the dual graph fails for several station pairs, 
+preventing the complete generation of real-data-based micro-level simulations.
+
+This limitation represents one of the main findings of the thesis. It shows that infrastructure coverage alone is not 
+sufficient to validate a railway digital twin. A generated network must also be topologically consistent and 
+operationally routable. The work therefore highlights the distinction between reconstructing railway elements and 
+producing a simulation model capable of supporting real train movements. Overall, this thesis provides a first foundation 
+for SUMO-based railway digital twin development and identifies the main challenges that must be addressed to progress 
+toward more realistic and operational railway simulations.
